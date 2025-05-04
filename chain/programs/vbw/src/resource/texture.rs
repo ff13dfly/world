@@ -12,8 +12,7 @@ use crate::constants::{
 /************************ Public Functions **************************/
 /********************************************************************/
 
-///!important, init the VBW system.
-
+///Add new IPFS texture
 pub fn add(
     _ctx: Context<AddTexture>,      //default from system
     ipfs:String,                    //IPFS cid
@@ -22,11 +21,36 @@ pub fn add(
     Ok(())
 }
 
+pub fn approve(
+    _ctx: Context<ApproveTexture>, 
+    index:u64,                      //texture index in queue
+) -> Result<()> {
+    
+    Ok(())
+}
+
+pub fn complain(
+    _ctx: Context<ComplainTexture>, //default from system
+    index:u64,                      //texture index in queue
+) -> Result<()> {
+    
+    Ok(())
+}
+
+pub fn recover(
+    _ctx: Context<RecoverTexture>,      //default from system
+    index:u64,                    //texture index in queue
+) -> Result<()> {
+    
+    Ok(())
+}
+
+
 /********************************************************************/
 /*********************** Private Functions **************************/
 /********************************************************************/
 
-fn is_valid_name() -> bool{
+fn is_manage_account() -> bool{
     return true;
 }
 
@@ -37,6 +61,25 @@ fn is_valid_name() -> bool{
 
 #[derive(Accounts)]
 pub struct AddTexture<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct ApproveTexture<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+}
+
+
+#[derive(Accounts)]
+pub struct ComplainTexture<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct RecoverTexture<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 }

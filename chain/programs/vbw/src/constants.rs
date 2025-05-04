@@ -48,7 +48,6 @@ pub struct WorldData {
     pub released: u64,      //all blocks are sold out slot height
 }
 
-
 /********************************************************************/
 /************************* Block Related ****************************/
 /********************************************************************/
@@ -117,12 +116,14 @@ impl WhiteList {
 
 //Texture queue for all worlds, texture can be banned
 #[account]
-pub struct TextureQueue{
-
+pub struct TextureData{
+    pub ipfs: String,   
+    pub status: u32,
 }
 
 //Module queue for all worlds, texture can be banned
 #[account]
-pub struct ModuleQueue{
-    
+pub struct ModuleData{
+    pub ipfs: String,
+    pub status: u32,
 }

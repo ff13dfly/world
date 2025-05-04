@@ -14,6 +14,9 @@ use crate::constants::{
 
 pub fn block(
     _ctx: Context<BanBlock>,      //default from system
+    x:u32,
+    y:u32,
+    world:u32,
 ) -> Result<()> {   
 
 
@@ -22,6 +25,7 @@ pub fn block(
 
 pub fn texture(
     _ctx: Context<BanTexture>,      //default from system
+    index: u64,
 ) -> Result<()> {   
 
 
@@ -30,6 +34,7 @@ pub fn texture(
 
 pub fn module(
     _ctx: Context<BanModule>,      //default from system
+    index: u64,
 ) -> Result<()> {   
 
 
