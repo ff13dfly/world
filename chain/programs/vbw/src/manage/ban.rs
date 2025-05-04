@@ -12,23 +12,39 @@ use crate::constants::{
 /************************ Public Functions **************************/
 /********************************************************************/
 
-///!important, init the VBW system.
+pub fn block(
+    _ctx: Context<BanBlock>,      //default from system
+) -> Result<()> {   
 
-pub fn add(
-    _ctx: Context<AddTexture>,      //default from system
-    ipfs:String,                    //IPFS cid
-) -> Result<()> {
-    
+
     Ok(())
 }
+
+pub fn texture(
+    _ctx: Context<BanTexture>,      //default from system
+) -> Result<()> {   
+
+
+    Ok(())
+}
+
+pub fn module(
+    _ctx: Context<BanModule>,      //default from system
+) -> Result<()> {   
+
+
+    Ok(())
+}
+
+
 
 /********************************************************************/
 /*********************** Private Functions **************************/
 /********************************************************************/
 
-fn is_valid_name() -> bool{
-    return true;
-}
+// fn is_valid_name() -> bool{
+//     return true;
+// }
 
 
 /********************************************************************/
@@ -36,7 +52,20 @@ fn is_valid_name() -> bool{
 /********************************************************************/
 
 #[derive(Accounts)]
-pub struct AddTexture<'info> {
+pub struct BanBlock<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct BanTexture<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+}
+
+
+#[derive(Accounts)]
+pub struct BanModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 }

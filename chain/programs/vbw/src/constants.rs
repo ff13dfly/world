@@ -1,5 +1,10 @@
 use anchor_lang::prelude::*;
 
+
+/********************************************************************/
+/*********************** Static Parameters **************************/
+/********************************************************************/
+
 ///Accounts space setting
 pub const ANCHOR_DESCRIMINATOR_SIZE: usize = 8;
 pub const SOLANA_PDA_LEN:usize=8;
@@ -15,21 +20,46 @@ pub const VBW_WORLD_MAX:u32= 99;              //offset to get the block hash
 pub const VBW_BLOCK_INIT_PRICE:u64= 1_000_000;      // 0.01 SOL, the block init price.
 
 ///PDA accounts seeds
-pub const VBW_SEEDS_WHITE_LIST:&[u8;18]=b"manage";
-pub const VBW_SEEDS_WORLD_LIST:&[u8;18]=b"worlds";
-pub const VBW_SEEDS_WORLD_COUNT:&[u8;18]=b"w_counter";
-pub const VBW_SEEDS_TEXTURE_BANNED_LIST:&[u8;18]=b"bd_texture";
-pub const VBW_SEEDS_MODULE_BANNED_LIST:&[u8;18]=b"bd_module";
-pub const VBW_SEEDS_BLOCK_BANNED_LIST:&[u8;18]=b"bd_block";
-pub const VBW_SEEDS_WORLD_RECIPIENT:&[u8;18]=b"w_recipient";
-pub const VBW_SEEDS_BLOCK_DATA:&[u8;18]=b"b_data";
+pub const VBW_SEEDS_WHITE_LIST:&[u8;6]=b"manage";
+pub const VBW_SEEDS_WORLD_LIST:&[u8;6]=b"worlds";
+pub const VBW_SEEDS_WORLD_COUNT:&[u8;9]=b"w_counter";
+pub const VBW_SEEDS_TEXTURE_BANNED_LIST:&[u8;10]=b"bd_texture";
+pub const VBW_SEEDS_MODULE_BANNED_LIST:&[u8;9]=b"bd_module";
+pub const VBW_SEEDS_BLOCK_BANNED_LIST:&[u8;8]=b"bd_block";
+pub const VBW_SEEDS_WORLD_RECIPIENT:&[u8;11]=b"w_recipient";
+pub const VBW_SEEDS_BLOCK_DATA:&[u8;6]=b"b_data";
+
+#[account]
+pub struct HoldingAccount {
+    pub data: String,       //Sample Account to avoid error.
+}
+
+/********************************************************************/
+/************************* World Related ****************************/
+/********************************************************************/
 
 //single VBW world setting
 #[account]
 pub struct WorldData {
-    pub data: String,
+    pub data: String,       //JSON world setting
     pub creator: String,    //creator of gene to accept token
     pub status: u32,        //wether close to mint
+    pub start: u64,         //world start slot height
+    pub released: u64,      //all blocks are sold out slot height
+}
+
+
+/********************************************************************/
+/************************* Block Related ****************************/
+/********************************************************************/
+
+//single VBW block setting
+#[account]
+pub struct BlockData {
+    pub data: String,     //JSON world setting
+    pub owner: String,    //creator of gene to accept token
+    pub create: u64,      //create slot height
+    pub update: u64,      //update slot height
 }
 
 //the total supply of LUCK token
@@ -56,6 +86,9 @@ impl WorldCounter {
     }
 }
 
+/********************************************************************/
+/*********************** Resource Related ***************************/
+/********************************************************************/
 
 //whitelist of managers, allow to manage the world
 #[account]
@@ -80,4 +113,16 @@ impl WhiteList {
     pub fn recipient(&mut self,recipient:String){
         self.recipient = recipient
     }
+}
+
+//Texture queue for all worlds, texture can be banned
+#[account]
+pub struct TextureQueue{
+
+}
+
+//Module queue for all worlds, texture can be banned
+#[account]
+pub struct ModuleQueue{
+    
 }

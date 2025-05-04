@@ -14,8 +14,9 @@ use crate::constants::{
 
 ///!important, init the VBW system.
 
-pub fn init(
-    _ctx: Context<InitVBW>,      //default from system
+pub fn add(
+    _ctx: Context<AddModule>,      //default from system
+    ipfs:String,                    //IPFS cid
 ) -> Result<()> {
 
     Ok(())
@@ -35,7 +36,7 @@ fn is_valid_name() -> bool{
 /********************************************************************/
 
 #[derive(Accounts)]
-pub struct InitVBW<'info> {
+pub struct AddModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 }

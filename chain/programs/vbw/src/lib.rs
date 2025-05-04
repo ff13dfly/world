@@ -8,10 +8,12 @@ use {
     world::*,
     block::*,
     resource::*,
+    manage::*,
 };
 pub mod world;
 pub mod block;
 pub mod resource;
+pub mod manage;
 pub mod constants;
 
 #[program]
