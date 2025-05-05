@@ -202,8 +202,8 @@ const self={
 
     updatePlayer:(user,id)=>{
         //1.设置player的位置
-        const player_chain=["env","player","location"];
-        VBW.cache.set(player_chain,user.block);
+        VBW.cache.set(["env","player","location"],user.block);
+        //VBW.cache.set(["env","player","world"],user.world);
 
         //2.设置相机的位置
         const cam_chain=["active","containers",id,"camera"];
@@ -338,7 +338,7 @@ const World={
     },
 
     //对block设置成edit状态
-    edit:(dom_id,world,x,y)=>{
+    edit:(dom_id,world,x,y,ck)=>{
     
         //1.构建edit的临时数据结构
         const chain=["block",dom_id,world,"edit"];
@@ -361,8 +361,20 @@ const World={
         //2.生成threeObject
         const range={x:x,y:y,ext:0,world:world,container:dom_id};
         const mode="edit";
-        VBW.autoStruct(mode,range,()=>{
-            //VBW[config.render].show(dom_id,[x,y]);
+        VBW.autoStruct(mode,range,{},(pre)=>{
+            console.log(pre);
+            UI.show("toast",`Editing component structed.`);
+
+            self.prefetch(pre.texture,pre.module,(failed)=>{                            
+                UI.show("toast",`Fetch texture and module for edit successful.`);
+
+                if(failed.module.length!==0) UI.show("toast",`Failed to frefetch module ${JSON.stringify(failed.module)}`,{type:"error"});
+                if(failed.texture.length!==0) UI.show("toast",`Failed to frefetch module ${JSON.stringify(failed.texture)}`,{type:"error"});
+
+                //5.加载渲染器和控制器
+                VBW[config.render].show(dom_id,[x,y]);
+                return ck && ck(true);
+            });
         });
     },
 

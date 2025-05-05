@@ -17,6 +17,15 @@ const config={
     texture:1,          //土地的texture的id
     color:0xeeeee,    //不贴图时，block的颜色
     repeat:[10,10],
+    active:{
+        height: 0.5,
+        color:[
+            0xff0000,
+            0x00ff00,
+            0x0000ff,
+            0xffff00,
+        ],
+    },
 };
 
 const self={
@@ -86,22 +95,64 @@ const self={
             return arr;
         },
 
-        std_active:(obj,cvt,side)=>{
+        //!important, active is struct from "std" to "3d"
+        std_active:(obj,va,cvt)=>{
             const ds={stop:[],helper:[]};
-            console.log(obj);
+            const cfg=config.active;
+            const h=cfg.height*cvt;
+            const zj=Math.PI*0.5;
             const row=obj[0];
             const arr=[];
+            
+            const cc=0.5*row.x;
+            const oz=va+h*0.5;
             arr.push({
                 type:"plane",
                 params:{
-                    size:[row.x,row.y,0],
-                    position:[0,0,0],
-                    rotation:[row.rx,row.ry,row.rz],
+                    size:[row.x,h,0],
+                    position:[cc,0,oz],
+                    rotation:[-zj,0,0],
                 },
                 material:{
-                    color:0xff0000,
+                    color:cfg.color[0],
                 },
-            })
+            });
+
+            arr.push({
+                type:"plane",
+                params:{
+                    size:[h,row.y,0],
+                    position:[cc+cc,cc,oz],
+                    rotation:[0,-zj,0],
+                },
+                material:{
+                    color:cfg.color[1],
+                },
+            });
+
+            arr.push({
+                type:"plane",
+                params:{
+                    size:[row.x,h,0],
+                    position:[cc,cc+cc,oz],
+                    rotation:[zj,0,0],
+                },
+                material:{
+                    color:cfg.color[2],
+                },
+            });
+
+            arr.push({
+                type:"plane",
+                params:{
+                    size:[h,row.y,0],
+                    position:[0,cc,oz],
+                    rotation:[0,zj,0],
+                },
+                material:{
+                    color:cfg.color[3],
+                },
+            });
 
             ds.helper=arr;
             return ds;

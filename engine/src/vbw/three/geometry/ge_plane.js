@@ -29,10 +29,13 @@ const self={
 
 const geometry_plane={
     create:(params)=>{
+        //console.log(params);
         if(!self.valid(params)) return {error:"Invalid parameters to create BOX."};
-        const {size,rotation} = params;
+        const {size} = params;
+
+        //console.log(size);
         
-        return new THREE.Plane(size[0], size[1]);
+        return new THREE.PlaneGeometry(size[0],size[1]);
     },
     standard:()=>{
         return self.sample();

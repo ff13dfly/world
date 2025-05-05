@@ -92,6 +92,7 @@ const ThreeObject = {
     },
 
     mesh:(geo,mt,position,rotation)=>{
+        //console.log(JSON.stringify(geo));
         if(geo===undefined ||
             mt===undefined ||
             position===undefined ||

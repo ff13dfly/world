@@ -62,7 +62,7 @@ const mock={
             y:y,
             world:world,
             data:[
-                1.3,        //block的高度
+                0.2,        //block的高度
                 1,          //block的状态
                 [
                     ["a1",[[[1.5,0.2,3],[1,0.3,1],[0,0,0],Toolbox.rand(60,90),[1,1],1,[],2025]]],

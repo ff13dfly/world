@@ -35,7 +35,7 @@ export default {
             if(done!==true) return ck && ck(done);
             World.first(container,ck,cfg);
 
-            World.edit(container,0,2025,501);
+            World.edit(container,0,2025,500);
         });
     },
 }

@@ -98,12 +98,8 @@ const self={
     },
 
     //从构建好的three的组件定义，转换成渲染器能处理的对象，用于创建threeObject并放入scene
-    singleBlock:(x,y,world,dom_id)=>{
-        const key=`${x}_${y}`;
-        const data_chain=["block",dom_id,world,key,"three"];
-        const dt=VBW.cache.get(data_chain);
+    singleBlock:(x,y,world,dt)=>{
         const result={object:[],module:[],texture:[],animate:[]};
-
         for(let name in dt){
             const list=dt[name];
             for(let i=0;i<list.length;i++){
@@ -167,10 +163,11 @@ const self={
     },
 
     getThree:(single,world,id,side)=>{
+        console.log(JSON.stringify(single));
         const arr=[];
         if(single.geometry && single.material){
-            const {geometry}=single;
-            const {rotation,position}=geometry.params;
+            const { geometry }=single;
+            const { rotation,position }=geometry.params;
             //console.log(single.material);
             const material=self.checkMaterial(single.material,world,id);
 
@@ -197,14 +194,14 @@ const self={
         
         //TODO,这里实现加载模型到scene里
         if(single.module){
-            console.log(`Load module.`);
+            //console.log(`Load module.`);
         }
 
         return arr;
     },
     //从构建好的three的组件定义，转换成渲染器能处理的对象，用于创建threeObject并放入scene
     singleEdit:(world,dom_id)=>{
-        const edit_chain=["block",id,world,"edit"];
+        const edit_chain=["block",dom_id,world,"edit"];
         const dt=VBW.cache.get(edit_chain);
         console.log(dt);
     },
@@ -222,6 +219,43 @@ const self={
         scene.add(sun);
     },
     loadEdit:(scene,dom_id)=>{
+        
+        const active=VBW.cache.get(["active"]);
+        const world=active.world;
+
+        const player=VBW.cache.get(["env","player"]);
+        console.log(JSON.stringify(player));
+    
+
+        const chain=["block",dom_id, active.world,"edit"];
+        if(!VBW.cache.exsist(chain)){
+            return  UI.show("toast",`No edit data to render.`,{type:"error"});
+        }
+        const edit=VBW.cache.get(chain);
+
+        const data=self.singleBlock(
+            player.location[0],
+            player.location[1],
+            world,
+            {border:edit.border}
+        );
+
+        //1.加载边框
+        const side=self.getSide();
+        for(let i=0;i<data.object.length;i++){
+            const single=data.object[i];
+            //console.log(JSON.stringify(single));
+            const ms=self.getThree(single,active.world,dom_id,side);
+            //console.log(JSON.stringify(ms[0].position));
+            for(let j=0;j<ms.length;j++){
+                if(ms[j].error){
+                    UI.show("toast",ms[j].error,{type:"error"});
+                    continue;
+                } 
+                scene.add(ms[j]);
+            }
+        }
+        
         //!important,因为在编辑状态下，player会走出编辑的block，定位的时候不能用player的数据
         //1.获取到在编辑的对象
 
@@ -248,7 +282,9 @@ const self={
                 if(cx<1 || cy<1) continue;
                 if(cx>limit[0] || cy>limit[1]) continue;
 
-                const data=self.singleBlock(cx,cy,world,dom_id);
+                const data_chain=["block",dom_id,world,`${cx}_${cy}`,"three"];
+                const tdata=VBW.cache.get(data_chain);
+                const data=self.singleBlock(cx,cy,world,tdata);
                 if(data.texture.length!==0) txs=txs.concat(data.texture);
                 if(data.module.length!==0) mds=mds.concat(data.module);
                 objs=objs.concat(data.object);
@@ -267,6 +303,7 @@ const self={
 
                 //3.1.创建对应的three object,并设置three object的基础参数，符合[x,y]的数据
                 const single=objs[i];
+                //console.log(JSON.stringify(single));
                 const side=self.getSide();
                 const ms=self.getThree(single,world,dom_id,side);
                 
@@ -286,7 +323,7 @@ const self={
                 //3.4.添加到scene里进行处理
                 for(let i=0;i<ms.length;i++){
                     if(ms[i].error){
-                        UI.show(ms[i].error,{type:"error"});
+                        UI.show("toast",ms[i].error,{type:"error"});
                         continue;
                     } 
                     scene.add(ms[i]);

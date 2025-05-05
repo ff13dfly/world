@@ -245,7 +245,6 @@ const self = {
         //1.处理编辑的内容，删除修改过的block的数据
         const modified_chain = ["cache", "modified", world];
         const ups = self.cache.get(modified_chain);
-
         if (!ups.error && !Toolbox.empty(ups)) {
             console.log(`Modified block.`, ups);
             self.cleanBlocks(ups, world, dom_id);
@@ -281,11 +280,8 @@ const self = {
         }
 
         //5.去重module和texture的id
-        //console.log(JSON.stringify(prefetch));
         prefetch.module = Toolbox.unique(prefetch.module);
         prefetch.texture = Toolbox.unique(prefetch.texture);
-        //console.log(JSON.stringify(prefetch));
-
         return ck && ck(prefetch);
     },
     editBlock:(x,y,world,dom_id)=>{
@@ -296,16 +292,27 @@ const self = {
         //console.log(map);
 
         //0.准备基础的参数
-        const std = {};
+        const stds = {};
         const cvt = self.getConvert();
-        const side = self.getSide();
         const va = self.getElevation(x, y, world, dom_id);
 
-        //1.构建block的数据
-        const bk=Framework.block.transform.std_active(map.block, va);
-        console.log(bk);
+        //1. block部分的数据
+        //1.1. 拆分出模型和材质
+        const bk=Framework.block.transform.std_active(map.block, va, cvt);
+        const edit_chain = ["block", dom_id, world, "edit"];
+        const edit=self.cache.get(edit_chain);
+        if(bk.helper && bk.helper.length!==0){
+            for (let i = 0; i < bk.helper.length; i++) {
+                const row = bk.helper[i];
+                if (row.material && row.material.texture) preload.texture.push(row.material.texture);
+                if (row.module) preload.module.push(row.module);
 
-        //1.构建block的数据;
+                //1.2. 挂载到对应
+                edit.border.push(row);
+            }
+        }
+
+        //2.构建block山的adjunct数据;
         for (let name in map) {
             const data = Framework[name].transform.std_active(map[name], va);
 
@@ -319,9 +326,6 @@ const self = {
                 
             }
         }
-
-
-        
 
         return preload;
     },
@@ -352,7 +356,7 @@ const self = {
         //3.去重module和texture的id
         prefetch.module = Toolbox.unique(prefetch.module);
         prefetch.texture = Toolbox.unique(prefetch.texture);
-
+        
         return ck && ck(prefetch);
     },
 
@@ -372,7 +376,7 @@ const self = {
     todo: (arr, dom_id, world, ck) => {
         if (arr.length === 0) return ck && ck();
         const task = arr.pop();
-        console.log(task);
+        //console.log(task);
 
         //1.按照task对raw的数据进行修改;
 
@@ -464,19 +468,15 @@ const Framework = {
 
         const dom_id = self.cache.get(current_chain);
         const active = self.getActive(dom_id);
-        const scene = active.scene;
-
-        //console.log(scene)
 
         //2.整理 cache.block.id.world.animate 下的数据，进行分类
         const world = self.cache.get(["active", "world"]);
 
         const ans = self.getAnimateQueue(world, dom_id);
-        const map = self.getAnimateMap(world, dom_id);         // `x_y_adj_index` --> ThreeObject[]
+        const map = self.getAnimateMap(world, dom_id);         
 
-        //FIXME,这里的算法需要修改，目前的情况是每个动画方法，都要遍历整个scene。
-        //修改后做个map，映射过去 `x_y_adj_index` --> ThreeObject[], 直接传给adjunct
         //3.运行对应的animate方法，把scene当作参数传入
+        // `x_y_adj_index` --> ThreeObject[]
         for (let i = 0; i < ans.length; i++) {
             const row = ans[i];
             const name = row.adjunct;
