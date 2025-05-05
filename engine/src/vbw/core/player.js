@@ -47,7 +47,7 @@ const mock={
     start:{
         block:[2025,501],
         world:0,
-        position:[8,12,2],
+        position:[8,4,1,7],
         rotation:[Math.PI*0.5,0,0],
         headAx:"y",
     },

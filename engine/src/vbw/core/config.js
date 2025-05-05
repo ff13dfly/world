@@ -32,6 +32,7 @@ const CONFIG={
         moving:false,					//player是否正在运动，用于处理资源的加载和重建，不影响用户操作体验
         death:false,					//player是否死亡;
     },
+    face:['x','y','z','-x','-y','-z'],  //face definition
 }
 
 export default CONFIG;

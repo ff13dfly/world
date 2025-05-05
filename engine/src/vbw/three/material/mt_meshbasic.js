@@ -20,6 +20,9 @@ const self={
 const material_meshbasic={
     create:(params)=>{
         if(!self.valid(params)) return {error:"Invalid parameters to create BOX."};
+        
+        if(!params.side) params.side=THREE.DoubleSide;
+
         return new THREE.MeshBasicMaterial(params);
     },
     standard:()=>{

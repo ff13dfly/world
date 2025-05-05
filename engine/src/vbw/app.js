@@ -35,7 +35,11 @@ export default {
             if(done!==true) return ck && ck(done);
             World.first(container,ck,cfg);
 
-            World.edit(container,0,2025,500);
+            const wd_index=0;
+            World.edit(container,wd_index,2025,500);
+            //World.select("wall",0,"x",2025,500,container);
+
+            World.select(container,wd_index,2025,500,"wall",0,"z");
         });
     },
 }

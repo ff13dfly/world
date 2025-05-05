@@ -241,6 +241,52 @@ const self = {
         self.cache.set(render_chain, rdata);
         return preload;
     },
+    
+    editBlock:(x,y,world,dom_id)=>{
+        const preload={module:[],texture:[]};
+
+        const raw_chain = ["block", dom_id, world, `${x}_${y}`, "std"];
+        const map = self.cache.get(raw_chain);
+        //console.log(map);
+
+        //0.准备基础的参数
+        const stds = {};
+        const cvt = self.getConvert();
+        const va = self.getElevation(x, y, world, dom_id);
+
+        //1. block部分的数据
+        //1.1. 拆分出模型和材质
+        const bk=Framework.block.transform.std_active(map.block, va, cvt);
+        const edit_chain = ["block", dom_id, world, "edit"];
+        const edit=self.cache.get(edit_chain);
+        if(bk.helper && bk.helper.length!==0){
+            for (let i = 0; i < bk.helper.length; i++) {
+                const row = bk.helper[i];
+                if (row.material && row.material.texture) preload.texture.push(row.material.texture);
+                if (row.module) preload.module.push(row.module);
+
+                //1.2. 挂载到对应
+                edit.border.push(row);
+            }
+        }
+
+        //2.构建block上的adjunct数据;
+        for (let name in map) {
+            const data = Framework[name].transform.std_active(map[name], va);
+
+            //2.构建stop的数据
+            if(data.stop && data.stop.length!==0){
+
+            }
+
+            //3.构建helper的数据(灯光等);
+            if(data.helper && data.helper.length!==0){
+                
+            }
+        }
+
+        return preload;
+    },
     structEntire: (x, y, ext, world, dom_id, cfg, ck) => {
         //1.处理编辑的内容，删除修改过的block的数据
         const modified_chain = ["cache", "modified", world];
@@ -284,54 +330,6 @@ const self = {
         prefetch.texture = Toolbox.unique(prefetch.texture);
         return ck && ck(prefetch);
     },
-    editBlock:(x,y,world,dom_id)=>{
-        const preload={module:[],texture:[]};
-
-        const raw_chain = ["block", dom_id, world, `${x}_${y}`, "std"];
-        const map = self.cache.get(raw_chain);
-        //console.log(map);
-
-        //0.准备基础的参数
-        const stds = {};
-        const cvt = self.getConvert();
-        const va = self.getElevation(x, y, world, dom_id);
-
-        //1. block部分的数据
-        //1.1. 拆分出模型和材质
-        const bk=Framework.block.transform.std_active(map.block, va, cvt);
-        const edit_chain = ["block", dom_id, world, "edit"];
-        const edit=self.cache.get(edit_chain);
-        if(bk.helper && bk.helper.length!==0){
-            for (let i = 0; i < bk.helper.length; i++) {
-                const row = bk.helper[i];
-                if (row.material && row.material.texture) preload.texture.push(row.material.texture);
-                if (row.module) preload.module.push(row.module);
-
-                //1.2. 挂载到对应
-                edit.border.push(row);
-            }
-        }
-
-        //2.构建block山的adjunct数据;
-        for (let name in map) {
-            const data = Framework[name].transform.std_active(map[name], va);
-
-            //2.构建stop的数据
-            if(data.stop && data.stop.length!==0){
-
-            }
-
-            //3.构建helper的数据(灯光等);
-            if(data.helper && data.helper.length!==0){
-                
-            }
-        }
-
-        return preload;
-    },
-    editActive:(x,y,world,dom_id)=>{
-
-    },
     structEdit: (x, y, ext, world, dom_id, cfg, ck) => {
         //1.处理不需要的block
         if(cfg && cfg.force){
@@ -362,6 +360,53 @@ const self = {
 
     structActive:(x, y, ext, world, dom_id, cfg, ck)=>{
         console.log(x, y, ext, world, dom_id, cfg);
+        const s_chain=["block",dom_id,world,"edit","selected"];
+        if(!self.cache.exsist(s_chain)) return ck && ck({error:"No selected adjuct to highlight."});
+
+        const prefetch = { module: [], texture: [] };
+
+        //1.调用std_active方法，计算组件需要显示的部分
+        const selected = self.cache.get(s_chain);
+        console.log(selected);
+        const raw_chain = ["block", dom_id, world, `${x}_${y}`, "std", selected.adjunct, selected.index];
+        if(!self.cache.exsist(raw_chain)) return ck && ck({error:"Invalid adjunct to highlight."});
+        const obj=self.cache.get(raw_chain);
+        //console.log(obj);
+        
+        const va = self.getElevation(x, y, world, dom_id);
+        const act=Framework[selected.adjunct].transform.std_active(obj, va);
+        const edit=self.cache.get(["block", dom_id, world, "edit"]);
+        if(act.helper && act.helper.length!==0){
+            for (let i = 0; i < bk.helper.length; i++) {
+                const row = bk.helper[i];
+                if (row.material && row.material.texture) preload.texture.push(row.material.texture);
+                if (row.module) preload.module.push(row.module);
+
+                //1.2. 挂载到对应位置
+                edit.helper.push(row);
+            }
+        }
+        
+        //2.create grid raw data
+        //const {x,y,elevation,size,offset,face,side,density}=params;
+        edit.grid.raw={
+            x:x,
+            y:y,
+            elevation:va,
+            size:{
+                x:obj.x,
+                y:obj.y,
+                z:obj.z},
+            offset:{
+                ox:obj.ox,
+                oy:obj.oy,
+                oz:obj.oz,
+            },
+            face:"x",
+            side:self.getSide(),
+        }
+
+        return ck && ck(prefetch);
     },
     cleanBlocks: (arr, world, dom_id) => {
         for (let i = 0; i < arr.length; i++) {

@@ -12,12 +12,12 @@ import * as THREE from "three";
 
 const self={
     get:(pa,pb,texture)=>{
-        // const sg = new THREE.Geometry();
+        // const geo = new THREE.Geometry();
         // const va=new THREE.Vector3(pa[0], pa[1], pa[2]);
         // const vb=new THREE.Vector3(pb[0], pb[1], pb[2])
-        // sg.vertices.push(va,vb);
+        // geo.vertices.push(va,vb);
 
-        // const line=new THREE.Line(sg,mm);
+        // const line=new THREE.Line(geo,mm);
         // line.userData={type:'gridLine',data:[pa,pb]};
         // return line;
     },
@@ -37,8 +37,7 @@ const self={
 const geometry_line={
     create:(params)=>{
         if(!self.valid(params)) return {error:"Invalid parameters to create BOX."};
-        const {size} = params;
-        return new THREE.BoxGeometry(size[0], size[1], size[2] );
+        return self.get(params);
     },
     standard:()=>{
         return self.sample();

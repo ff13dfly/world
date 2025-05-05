@@ -255,6 +255,26 @@ const self={
             });
         });
     },
+
+    rebuild:(mode,range,cfg,dom_id,ck)=>{
+        VBW.autoStruct(mode,range,cfg,(pre)=>{
+            UI.show("toast",`Struct all components, ready to show.`);
+            //3.1.3D物体构建完毕，可以计算用户的位置了
+            //self.updatePlayer(start,dom_id);
+            //3.2.获取网络的资源，用于构建3D。以后这部分可以使用服务进行加速
+            self.prefetch(pre.texture,pre.module,(failed)=>{                            
+                UI.show("toast",`Fetch texture and module successful.`);
+
+                if(failed.module.length!==0) UI.show("toast",`Failed to frefetch module ${JSON.stringify(failed.module)}`,{type:"error"});
+                if(failed.texture.length!==0) UI.show("toast",`Failed to frefetch module ${JSON.stringify(failed.texture)}`,{type:"error"});
+
+                //5.加载渲染器和控制器
+                VBW[config.render].show(dom_id);
+                //VBW[config.controller].start(dom_id);
+                return ck && ck();
+            });
+        });
+    },
 }   
 
 const World={
@@ -296,25 +316,14 @@ const World={
                     const failed = self.save(dom_id,index,list,wd);
                     if(failed) return UI.show("toast",`Failed to set cache, internal error, abort.`,{type:"error"});
                     
+                    self.updatePlayer(start,dom_id);
                     //3.解析所有block数据到std
                     const range={x:x,y:y,ext:ext,world:index,container:dom_id};
                     const mode="init";
-                    VBW.autoStruct(mode,range,cfg,(pre)=>{
-                        UI.show("toast",`Struct all components, ready to show.`);
-                        //3.1.3D物体构建完毕，可以计算用户的位置了
-                        self.updatePlayer(start,dom_id);
-                        //3.2.获取网络的资源，用于构建3D。以后这部分可以使用服务进行加速
-                        self.prefetch(pre.texture,pre.module,(failed)=>{                            
-                            UI.show("toast",`Fetch texture and module successful.`);
-
-                            if(failed.module.length!==0) UI.show("toast",`Failed to frefetch module ${JSON.stringify(failed.module)}`,{type:"error"});
-                            if(failed.texture.length!==0) UI.show("toast",`Failed to frefetch module ${JSON.stringify(failed.texture)}`,{type:"error"});
-
-                            //5.加载渲染器和控制器
-                            VBW[config.render].show(dom_id);
-                            VBW[config.controller].start(dom_id);
-                            return ck && ck(true);
-                        });
+                    self.rebuild(mode,range,cfg,dom_id,()=>{
+                       
+                        VBW[config.controller].start(dom_id);
+                        return ck && ck(true);
                     });
                 });
             });
@@ -343,11 +352,12 @@ const World={
         //1.构建edit的临时数据结构
         const chain=["block",dom_id,world,"edit"];
         VBW.cache.set(chain,{
-            x:x,y:y,
+            x:x,y:y,world:world,
             border:[],          //block的边框的threeObject
             raycast:[],         //取出所有[x,y]的threeObject供检测
             helper:[],          //所有的helper
             grid:{
+                raw:null,       //grid raw parameters,
                 line:[],        //格栅的线的threeObject
                 point:[],       //格栅定位点的threeObject
             },
@@ -361,20 +371,8 @@ const World={
         //2.生成threeObject
         const range={x:x,y:y,ext:0,world:world,container:dom_id};
         const mode="edit";
-        VBW.autoStruct(mode,range,{},(pre)=>{
-            console.log(pre);
-            UI.show("toast",`Editing component structed.`);
-
-            self.prefetch(pre.texture,pre.module,(failed)=>{                            
-                UI.show("toast",`Fetch texture and module for edit successful.`);
-
-                if(failed.module.length!==0) UI.show("toast",`Failed to frefetch module ${JSON.stringify(failed.module)}`,{type:"error"});
-                if(failed.texture.length!==0) UI.show("toast",`Failed to frefetch module ${JSON.stringify(failed.texture)}`,{type:"error"});
-
-                //5.加载渲染器和控制器
-                VBW[config.render].show(dom_id,[x,y]);
-                return ck && ck(true);
-            });
+        self.rebuild(mode,range,{},dom_id,()=>{
+            return ck && ck(true);
         });
     },
 
@@ -384,6 +382,22 @@ const World={
         const chain=["block",dom_id,world];
         const cur=VBW.cache.get(chain);
         delete cur.edit;
+    },
+
+    select:(dom_id,world,x,y,name,index,face,ck)=>{
+        //1. set selected adjunct
+        const chain=["block",dom_id,world,"edit","selected"];
+        const target=VBW.cache.get(chain);
+        target.adjunct=name;
+        target.index=index;
+        target.face=face;
+
+        //2. fresh 
+        const range={x:x,y:y,ext:0,world:world,container:dom_id};
+        const mode="active";
+        self.rebuild(mode,range,{},dom_id,()=>{
+            return ck && ck(true);
+        });
     },
 }
 

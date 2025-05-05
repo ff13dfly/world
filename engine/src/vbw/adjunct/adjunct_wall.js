@@ -7,7 +7,6 @@
 *  1.single wall
 */
 
-//import Framework from "../core/framework";
 const reg={
     name:"wall",        //组件名称
     category:"adjunct",     //组件分类
@@ -121,7 +120,8 @@ const self={
 
 
         //3D高亮时候，需要的3D的object
-        std_active:(stds,va,index)=>{
+        std_active:(std,va)=>{
+            //console.log(std,va);
             const ds={stop:[],helper:[]};
             return ds;
         },

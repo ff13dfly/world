@@ -163,7 +163,7 @@ const self={
     },
 
     getThree:(single,world,id,side)=>{
-        console.log(JSON.stringify(single));
+        //console.log(JSON.stringify(single));
         const arr=[];
         if(single.geometry && single.material){
             const { geometry }=single;
@@ -218,35 +218,39 @@ const self={
         )
         scene.add(sun);
     },
+
+    //FIXME, player can go out of editing block, this can effect the active block
+    //!important,因为在编辑状态下，player会走出编辑的block，定位的时候不能用player的数据
     loadEdit:(scene,dom_id)=>{
-        
-        const active=VBW.cache.get(["active"]);
-        const world=active.world;
-
-        const player=VBW.cache.get(["env","player"]);
-        console.log(JSON.stringify(player));
-    
-
-        const chain=["block",dom_id, active.world,"edit"];
+        //const player=VBW.cache.get(["env","player"]);
+        const world=VBW.cache.get(["active","world"]);
+        const chain=["block",dom_id, world,"edit"];
         if(!VBW.cache.exsist(chain)){
             return  UI.show("toast",`No edit data to render.`,{type:"error"});
         }
         const edit=VBW.cache.get(chain);
+        //console.log(edit);
+        
+        //1.对应的helper
+        let objs=[];
+        if(edit.selected.adjunct){
+            if(edit.helper.length!==0){
+                objs=objs.concat(edit.helper);
+            }
+        }
 
+        //2.加载边框
+        objs=objs.concat(edit.border);
         const data=self.singleBlock(
-            player.location[0],
-            player.location[1],
+            edit.x,
+            edit.y,
             world,
-            {border:edit.border}
+            { editor:objs }
         );
-
-        //1.加载边框
         const side=self.getSide();
         for(let i=0;i<data.object.length;i++){
             const single=data.object[i];
-            //console.log(JSON.stringify(single));
-            const ms=self.getThree(single,active.world,dom_id,side);
-            //console.log(JSON.stringify(ms[0].position));
+            const ms=self.getThree(single,world,dom_id,side);
             for(let j=0;j<ms.length;j++){
                 if(ms[j].error){
                     UI.show("toast",ms[j].error,{type:"error"});
@@ -255,13 +259,24 @@ const self={
                 scene.add(ms[j]);
             }
         }
-        
-        //!important,因为在编辑状态下，player会走出编辑的block，定位的时候不能用player的数据
-        //1.获取到在编辑的对象
 
-        //2.将组件添加到scene里
-        //const world=0;
-        //self.singleEdit(world,dom_id);
+        //3.加载边框
+        if(edit.grid.raw!==null){
+            const params=Toolbox.clone(edit.grid.raw);
+            params.density={
+                offsetX:1000,
+                offsetY:1000,
+                limitZ:12000,
+            }
+            const gs=ThreeObject.get("extend","grid",params);
+            edit.grid.line=gs;
+
+            gs.position[0]+=(edit.x-1)*side[0];
+            gs.position[1]+=(edit.y-1)*side[1];
+            scene.add(gs);
+        }
+
+        
     },
     loadBlocks:(scene,dom_id)=>{
         const player_chain=["env","player"];

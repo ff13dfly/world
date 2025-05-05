@@ -227,7 +227,7 @@ const control_fpv={
         //5.将键盘操作，处理成运动
         if(config.keyboard===undefined) config.keyboard=self.flip(config.code);
 
-        console.log(camera);
+        //console.log(camera);
     },
 }
 

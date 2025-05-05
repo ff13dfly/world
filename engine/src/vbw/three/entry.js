@@ -31,6 +31,8 @@ import texture_basic from "./texture/tx_basic";
 import material_meshphong from "./material/mt_meshphong";
 import material_meshbasic from "./material/mt_meshbasic";
 
+import extend_grid from "./extend/grid";
+
 const router={
     basic:{
         render:Render,
@@ -57,17 +59,17 @@ const router={
         linedashed:null,
     },
     geometry:{
-        line: geometry_line,
+        line: null,                 //line is isolated, not just geometry
         plane:geometry_plane,
         box: geometry_box,
         ball: geometry_ball,
         cylinder:geometry_cylinder,
-        tube:geometry_tube,              //用来创建septopus的爪子
+        tube:geometry_tube,         //for Septopus Rex
     },
     extend:{
-        grid:null,      //辅助线
-        pano:null,      //全景，天球
-        outline:null,   //外轮廓线
+        grid:extend_grid,       //Location gird
+        pano:null,              //cube pano sky
+        outline:null,           //adjunct outline
     },
     loader:{            //3D module loader
         ds3:null,
@@ -85,7 +87,7 @@ const self = {
 };
 
 const ThreeObject = {
-    //获取3D object的入口
+    //Entry to get geometry, material
     get: (cat, mod, params) => {
         if(!router[cat] || !router[cat][mod]) return {error:`Invalid three object: ${cat} ${mod}`}
         return router[cat][mod].create(params);
@@ -108,6 +110,14 @@ const ThreeObject = {
         mesh.position.set(...position);
         mesh.rotation.set(...rotation);
         return {mesh:mesh,material:mm};
+    },
+
+    line:(points,mt,position,rotation)=>{
+
+    },
+
+    group:(objs,position,rotation)=>{
+
     },
 }
 
