@@ -39,7 +39,7 @@ export default {
             World.edit(container,wd_index,2025,500);
             //World.select("wall",0,"x",2025,500,container);
 
-            World.select(container,wd_index,2025,500,"wall",0,"z");
+            World.select(container,wd_index,2025,500,"module",0,"z");
         });
     },
 }

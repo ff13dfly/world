@@ -8,7 +8,7 @@ use serde_json::{Value};
 /// Even there is `enable` method to avoid invalid gene data, it is still necessary to check gene carefully
 ///TODO, here to check gene data carefully.
 pub fn is_valid_world_setting(input: &str) -> bool {
-    let parsed: Value = match serde_json::from_str(input) {
+    let _parsed: Value = match serde_json::from_str(input) {
         Ok(json) => json,
         Err(_) => return false,
     };

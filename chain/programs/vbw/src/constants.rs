@@ -22,6 +22,7 @@ pub const VBW_BLOCK_INIT_PRICE:u64= 1_000_000;      // 0.01 SOL, the block init 
 ///PDA accounts seeds
 pub const VBW_SEEDS_WHITE_LIST:&[u8;6]=b"manage";
 pub const VBW_SEEDS_WORLD_LIST:&[u8;6]=b"worlds";
+pub const VBW_SEEDS_ADJUNCT_LIST:&[u8;7]=b"adjunct";
 pub const VBW_SEEDS_WORLD_COUNT:&[u8;9]=b"w_counter";
 pub const VBW_SEEDS_TEXTURE_BANNED_LIST:&[u8;10]=b"bd_texture";
 pub const VBW_SEEDS_MODULE_BANNED_LIST:&[u8;9]=b"bd_module";
@@ -29,23 +30,35 @@ pub const VBW_SEEDS_BLOCK_BANNED_LIST:&[u8;8]=b"bd_block";
 pub const VBW_SEEDS_WORLD_RECIPIENT:&[u8;11]=b"w_recipient";
 pub const VBW_SEEDS_BLOCK_DATA:&[u8;6]=b"b_data";
 
-#[account]
-pub struct HoldingAccount {
-    pub data: String,       //Sample Account to avoid error.
-}
-
 /********************************************************************/
 /************************* World Related ****************************/
 /********************************************************************/
 
 //single VBW world setting
 #[account]
+pub struct WorldList {
+    list:Vec<WorldData>,
+}
+impl WorldList {
+    //add new world to world list
+    pub fn add(&mut self, _data:WorldData) {
+
+    }
+
+    //when all blocks are sold out, close the world
+    pub fn close(&mut self) {
+
+    }
+}
+
+#[account]
+#[derive(InitSpace)]
 pub struct WorldData {
+    #[max_len(200)]         
     pub data: String,       //JSON world setting
-    pub creator: String,    //creator of gene to accept token
     pub status: u32,        //wether close to mint
     pub start: u64,         //world start slot height
-    pub released: u64,      //all blocks are sold out slot height
+    pub close: u64,         //all blocks are sold out slot height
 }
 
 /********************************************************************/
@@ -54,11 +67,43 @@ pub struct WorldData {
 
 //single VBW block setting
 #[account]
+//#[derive(InitSpace)]
 pub struct BlockData {
-    pub data: String,     //JSON world setting
+    //#[max_len(30)] 
+    pub account: String,
+    //#[max_len(30)] 
+    pub owner: String,              //owner of block 
+    pub create: u64,                //create slot height
+    pub update: u64,                //last update slot height
+    pub status: u32,                //block status
+}
+
+/********************************************************************/
+/************************ Resource Related **************************/
+/********************************************************************/
+
+//single texture data struct
+#[account]
+pub struct TextureData {
+    pub ipfs: String,     //JSON world setting
     pub owner: String,    //creator of gene to accept token
     pub create: u64,      //create slot height
-    pub update: u64,      //update slot height
+    pub status: u32,      //block status
+}
+
+//single module data struct
+#[account]
+pub struct ModuleData {
+    pub ipfs: String,     //JSON world setting
+    pub owner: String,    //creator of gene to accept token
+    pub create: u64,      //create slot height
+    pub status: u32,      //block status
+}
+
+//resource map to check IPFS file
+#[account]
+pub struct ResourceMap {
+
 }
 
 //the total supply of LUCK token
@@ -114,16 +159,10 @@ impl WhiteList {
     }
 }
 
-//Texture queue for all worlds, texture can be banned
-#[account]
-pub struct TextureData{
-    pub ipfs: String,   
-    pub status: u32,
-}
 
-//Module queue for all worlds, texture can be banned
-#[account]
-pub struct ModuleData{
-    pub ipfs: String,
-    pub status: u32,
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("System is inited already.")]
+    AlreadyInited,
 }

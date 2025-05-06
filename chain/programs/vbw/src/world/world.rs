@@ -4,9 +4,9 @@ use {
     //anchor_lang::system_program,
 };
 
-use crate::constants::{
-    SOLANA_PDA_LEN,
-};
+// use crate::constants::{
+//     SOLANA_PDA_LEN,
+// };
 
 /********************************************************************/
 /************************ Public Functions **************************/
@@ -33,8 +33,8 @@ pub fn init(
 
 pub fn start(
     _ctx: Context<NewWorld>,    //default from system
-    index:u32,                  //index of world to  start
-    setting:String,             //world setting as JSON format
+    _index:u32,                  //index of world to  start
+    _setting:String,             //world setting as JSON format
 ) -> Result<()> {
 
     //0. input check
@@ -79,11 +79,4 @@ pub struct InitVBW<'info> {
 pub struct NewWorld<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
-}
-
-
-#[error_code]
-pub enum ErrorCode {
-    #[msg("System is inited already.")]
-    AlreadyInited,
 }

@@ -20,6 +20,10 @@ pub mod constants;
 pub mod vbw {
     use super::*;
 
+    /************************************************************************************************/
+    /********************************* System setting functions *************************************/
+    /************************************************************************************************/
+
     ///init whole VBW system
     pub fn init(
         ctx: Context<InitVBW>,
@@ -27,6 +31,19 @@ pub mod vbw {
         world::init(ctx)
     }
 
+
+    ///insert or update adjunct details
+    pub fn adjunct(
+        ctx: Context<UpdateAdjunct>,
+        short:String,
+        name:String,
+        format:String,
+        version:u32,
+    ) -> Result<()> {
+        adjunct::update(ctx,short,name,format,version)
+    }
+
+    ///start a new world when it is ready
     pub fn start_world(
         ctx: Context<NewWorld>,
         index:u32,
@@ -35,7 +52,11 @@ pub mod vbw {
         world::start(ctx,index,setting)
     }
 
-    ///Block part
+    /************************************************************************************************/
+    /********************************* Block related functions **************************************/
+    /************************************************************************************************/
+
+    ///Mint out a new block if it is valid.
     pub fn mint_block(
         ctx: Context<MintBlock>,
         x: u32,
@@ -45,16 +66,18 @@ pub mod vbw {
         block::mint(ctx,x,y,world)
     }
 
+    ///Update the data account address
     pub fn update_block(
         ctx: Context<UpdateBlock>,
-        account:String,
+        account:String,                    //Data account address
         x: u32,
         y:u32,
         world:u32
     ) -> Result<()> {
-        block::update(ctx,account,x,y,world)
+        block::update(ctx,x,y,world,account)
     }
 
+    ///set price to sell block
     pub fn sell_block(
         ctx: Context<SellBlock>,
         x: u32,
@@ -62,9 +85,10 @@ pub mod vbw {
         world:u32,
         price:u32,
     ) -> Result<()> {
-        block::sell(ctx,price,x,y,world)
+        block::sell(ctx,x,y,world,price)
     }
 
+    ///buy the on-sell block
     pub fn buy_block(
         ctx: Context<BuyBlock>,
         x: u32,
@@ -74,16 +98,18 @@ pub mod vbw {
         block::buy(ctx,x,y,world)
     }
 
+    ///complain when block content is illeagale
     pub fn complain_block(
         ctx: Context<ComplainBlock>,
-        data:String,
+        json:String,                        //JSON format complain struct, need to check 
         x: u32,
         y:u32,
         world:u32,
     ) -> Result<()> {
-        block::complain(ctx,data,x,y,world)
+        block::complain(ctx,x,y,world,json)
     }
 
+    ///recover the banned block, manage operation
     pub fn recover_block(
         ctx: Context<RecoverBlock>,
         x: u32,
@@ -93,6 +119,7 @@ pub mod vbw {
         block::recover(ctx,x,y,world)
     }
 
+    ///ban the target block, manage operation
     pub fn ban_block(
         ctx: Context<BanBlock>,
         x: u32,
@@ -102,35 +129,44 @@ pub mod vbw {
         manage::block(ctx,x,y,world)
     }
 
-    ///Texture management
+    /************************************************************************************************/
+    /************************************* Texture Management ***************************************/
+    /************************************************************************************************/
+
+    ///add new IPFS texture, need to approve
     pub fn add_texture(
         ctx: Context<AddTexture>,
         ipfs: String,
     ) -> Result<()> {
-        texture::add(ctx,ipfs)
+        texture::texture_add(ctx,ipfs)
     }
 
+    ///complain when texture content is illeagale
+    pub fn complain_texture(
+        ctx: Context<ComplainTexture>,
+        data:String,
+        index: u64,
+    ) -> Result<()> {
+        texture::texture_complain(ctx,data,index)
+    }
+
+    ///approve to allow texture for VBW, manage operation
     pub fn approve_texture(
         ctx: Context<ApproveTexture>,
         index: u64,
     ) -> Result<()> {
-        texture::approve(ctx,index)
-    }
+        texture::texture_approve(ctx,index)
+    }  
 
-    pub fn complain_texture(
-        ctx: Context<ComplainTexture>,
-        index: u64,
-    ) -> Result<()> {
-        texture::complain(ctx,index)
-    }
-
+    ///recover the banned texture, manage operation
     pub fn recover_texture(
         ctx: Context<RecoverTexture>,
         index: u64,
     ) -> Result<()> {
-        texture::recover(ctx,index)
+        texture::texture_recover(ctx,index)
     }
 
+    ///ban the target texture, manage operation
     pub fn ban_texture(
         ctx: Context<BanTexture>,
         index: u64,
@@ -138,11 +174,48 @@ pub mod vbw {
         manage::texture(ctx,index)
     }
 
-    ///Module management
+    /************************************************************************************************/
+    /************************************* Module Management ****************************************/
+    /************************************************************************************************/
+
+    ///add new IPFS module, need to approve
     pub fn add_module(
         ctx: Context<AddModule>,
         ipfs: String,
     ) -> Result<()> {
-        module::add(ctx,ipfs)
+        module::module_add(ctx,ipfs)
+    }
+
+    ///complain when texture content is illeagale
+    pub fn complain_module(
+        ctx: Context<ComplainModule>,
+        data:String,
+        index: u64,
+    ) -> Result<()> {
+        module::module_complain(ctx,data,index)
+    }
+
+    ///approve to allow module for VBW, manage operation
+    pub fn approve_module(
+        ctx: Context<ApproveModule>,
+        index: u64,
+    ) -> Result<()> {
+        module::module_approve(ctx,index)
+    }
+
+    ///recover the banned module, manage operation
+    pub fn recover_module(
+        ctx: Context<RecoverModule>,
+        index: u64,
+    ) -> Result<()> {
+        module::module_recover(ctx,index)
+    }
+
+    ///ban the target module, manage operation
+    pub fn ban_module(
+        ctx: Context<BanModule>,
+        index: u64,
+    ) -> Result<()> {
+        manage::module(ctx,index)
     }
 }

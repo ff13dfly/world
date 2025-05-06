@@ -4,9 +4,9 @@ use {
     //anchor_lang::system_program,
 };
 
-use crate::constants::{
-    SOLANA_PDA_LEN,
-};
+// use crate::constants::{
+//     SOLANA_PDA_LEN,
+// };
 
 /********************************************************************/
 /************************ Public Functions **************************/
@@ -14,36 +14,35 @@ use crate::constants::{
 
 ///!important, init the VBW system.
 
-pub fn add(
+pub fn module_add(
     _ctx: Context<AddModule>,      //default from system
-    ipfs:String,                    //IPFS cid
+    _ipfs:String,                    //IPFS cid
 ) -> Result<()> {
 
     Ok(())
 }
 
 
-pub fn approve(
+pub fn module_approve(
     _ctx: Context<ApproveModule>,      //default from system                   
-    index:u64,
+    _index:u64,
 ) -> Result<()> {
 
     Ok(())
 }
 
-pub fn complain(
+pub fn module_complain(
     _ctx: Context<ComplainModule>,      //default from system
-    data:String,                    
-    index:u64,
+    _json:String,                     //complain JSON string                 
+    _index:u64,
 ) -> Result<()> {
 
     Ok(())
 }
 
-pub fn recover(
-    _ctx: Context<RecoverModule>,      //default from system
-    data:String,                    
-    index:u64,
+pub fn module_recover(
+    _ctx: Context<RecoverModule>,      //default from system                   
+    _index:u64,
 ) -> Result<()> {
 
     Ok(())
@@ -54,9 +53,9 @@ pub fn recover(
 /*********************** Private Functions **************************/
 /********************************************************************/
 
-fn is_valid_name() -> bool{
-    return true;
-}
+// fn is_valid_name() -> bool{
+//     return true;
+// }
 
 
 /********************************************************************/
@@ -87,11 +86,4 @@ pub struct ComplainModule<'info> {
 pub struct RecoverModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
-}
-
-
-#[error_code]
-pub enum ErrorCode {
-    #[msg("System is inited already.")]
-    AlreadyInited,
 }

@@ -12,36 +12,17 @@ use {
 /************************ Public Functions **************************/
 /********************************************************************/
 
-pub fn block(
-    _ctx: Context<BanBlock>,      //default from system
-    _x:u32,
-    _y:u32,
-    _world:u32,
+pub fn update(
+    _ctx: Context<UpdateAdjunct>,      //default from system
+    _short:String,
+    _name:String,
+    _format:String,
+    _version:u32,
 ) -> Result<()> {   
 
 
     Ok(())
 }
-
-pub fn texture(
-    _ctx: Context<BanTexture>,      //default from system
-    _index: u64,
-) -> Result<()> {   
-
-
-    Ok(())
-}
-
-pub fn module(
-    _ctx: Context<BanModule>,      //default from system
-    _index: u64,
-) -> Result<()> {   
-
-
-    Ok(())
-}
-
-
 
 /********************************************************************/
 /*********************** Private Functions **************************/
@@ -57,20 +38,7 @@ pub fn module(
 /********************************************************************/
 
 #[derive(Accounts)]
-pub struct BanBlock<'info> {
-    #[account(mut)]
-    pub payer: Signer<'info>,
-}
-
-#[derive(Accounts)]
-pub struct BanTexture<'info> {
-    #[account(mut)]
-    pub payer: Signer<'info>,
-}
-
-
-#[derive(Accounts)]
-pub struct BanModule<'info> {
+pub struct UpdateAdjunct<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 }
