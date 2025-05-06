@@ -102,7 +102,6 @@ const config={
 };
 
 const self={
-    //1.注册组件的方法，所有的组件都可以在framework里进行调用
     register:()=>{
         const regKey=CONFIG.hooks.register;
         const initKey=CONFIG.hooks.initialize;
@@ -113,14 +112,14 @@ const self={
                 const component=coms[i];
                 if(component.hooks===undefined) continue;
 
-                //1.挂载注册组件
+                //1.load VBW parts to Framework
                 if(component.hooks[regKey]!==undefined){
                     const cfg=component.hooks[regKey]();
                     const result=VBW.component.reg(cfg,component);
                     if(result.error!==undefined) UI.show("toast",result.error,{type:"error"});
                 }   
 
-                //2.处理初始化的数据
+                //2.init the parts component
                 if(component.hooks[initKey]!==undefined){
                     const res=component.hooks[initKey]();
                     if(!res.chain || !res.value){
@@ -134,6 +133,7 @@ const self={
     },
     //构建需要的dom,都放在container下
     struct:(container)=>{
+        if(VBW.block===undefined) return UI.show("toast",`No more component.`,{type:"error"});
         //0.设备检测
         const dt=VBW.detect.check(container);
 
@@ -163,7 +163,7 @@ const self={
         fun(w_chain,wd);
 
         //1.1.设置modified的位置
-        const m_chain=["modified",dom_id,world];
+        const m_chain=["task",dom_id,world];
         fun(m_chain,[]);
         
         //2.处理blockd的raw数据保存
@@ -257,7 +257,7 @@ const self={
     },
 
     rebuild:(mode,range,cfg,dom_id,ck)=>{
-        VBW.autoStruct(mode,range,cfg,(pre)=>{
+        VBW.struct(mode,range,cfg,(pre)=>{
             UI.show("toast",`Struct all components, ready to show.`);
             //3.1.3D物体构建完毕，可以计算用户的位置了
             //self.updatePlayer(start,dom_id);
@@ -270,7 +270,6 @@ const self={
 
                 //5.加载渲染器和控制器
                 VBW[config.render].show(dom_id);
-                //VBW[config.controller].start(dom_id);
                 return ck && ck();
             });
         });
@@ -281,7 +280,6 @@ const World={
     init:async ()=>{
         //1.注册所有的组件
         self.register();
-
         UI.show("toast",`Virtual block world running env done.`,{});
         VBW.dump();
         return true;

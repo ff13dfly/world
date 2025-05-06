@@ -127,20 +127,20 @@ const self={
             //console.log(`Current ${JSON.stringify([x,y])}, player: ${JSON.stringify(player.location)}`)
 
             //2.处理跨越block的数据获取
-            if(player.location[0]!==x || player.location[1]!==y){
+            const [bx,by]=player.location;
+            if(bx!==x || by!==y){
                 console.log(`Cross block from  ${JSON.stringify(player.location)} to ${JSON.stringify([x,y])}`);
 
-                const tasks=VBW.cache.get(["modified",container,world]);
+                const tasks=VBW.cache.get(["task",container,world]);
+                tasks.push({adjunct:"block",act:"remove",param:{x:bx,y:by}});
+                //tasks.push({adjunct:"block",act:"remove",param:{x:x+1,y:y}});
+                //tasks.push({adjunct:"block",act:"remove",param:{x:x,y:y+1}});
 
-                tasks.push({adjunct:"block",act:"remove",param:{x:x,y:y}});
-                tasks.push({adjunct:"block",act:"remove",param:{x:x+1,y:y}});
-                tasks.push({adjunct:"block",act:"remove",param:{x:x,y:y+1}});
-                //console.log(tasks);
+                tasks.push({adjunct:"wall",act:"set",x:bx,y:by,world:0,param:{index:0,x:1.9}});
             }
-            //const dom_id=VBW.cache.get(["active","current"]);
+
             VBW.update(container,world);
         }
-
     },
 
     //帧检测的方法，在这里进行运动

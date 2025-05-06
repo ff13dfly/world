@@ -11,6 +11,7 @@
 import Framework from "./core/framework";
 import UI from "./io/io_ui";
 import World from "./core/world";
+import Toolbox from "./lib/toolbox";
 
 const self={
     init:async (container,ck)=>{
@@ -37,9 +38,14 @@ export default {
 
             const wd_index=0;
             World.edit(container,wd_index,2025,500);
-            //World.select("wall",0,"x",2025,500,container);
 
-            World.select(container,wd_index,2025,500,"module",0,"z");
+            const fs=["x","y","z","-x","-y","-z"];
+            World.select(container,wd_index,2025,500,"module",0,fs[Toolbox.rand(0,5)]);
+
+            // setInterval(()=>{
+            //     const fs=["x","y","z","-x","-y","-z"];
+            //     World.select(container,wd_index,2025,500,"module",0,fs[Toolbox.rand(0,5)]);
+            // },2000);
         });
     },
 }

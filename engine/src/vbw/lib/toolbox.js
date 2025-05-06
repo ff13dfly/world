@@ -59,17 +59,6 @@ const Toolbox = {
   toF: (a, fix) => {
     fix = fix || 3; return parseFloat(a.toFixed(fix))
   },
-  //FIXME,这个不对的，需要处理
-  merge:(arr,done)=>{
-    if(done===undefined) done=[];
-    if(arr.length===0) return done;
-    const row= arr.pop();
-    done = [...new Set(...done,...row)];
-    return Toolbox.merge(arr,done);
-  },
-  uuid: () => {
-
-  },
   extend: (path, data, force, target) => {
     const len = path.length
     let p = target;

@@ -38,20 +38,8 @@ const self={
         },
     },
     attribute:{
-        add:(p)=>{
-
-        },
-        set:()=>{
-
-        },
-        del:()=>{
-
-        },
-        combine:()=>{
-
-        },
-
-        revise:(p,data,limit)=>{
+        //such as set elevation or set texture.
+        set:(p,raw)=>{
 
         },
     },
@@ -61,7 +49,7 @@ const self={
             const status=obj[1];
 
             //FIXME,这里需要去获取到block的边长.
-            //console.log(side);
+            
             const s=side[0],hs=0.5*s;
 			const data={
 				x:s,y:s,z:va*cvt,

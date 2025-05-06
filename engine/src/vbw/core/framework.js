@@ -5,8 +5,9 @@
 *  @date 2025-04-23
 *  @functions
 *  1.resource control
-*  2.group functions
+*  2.running workflow
 *  3.setting manage
+*  4.edit workflow
 */
 
 import Toolbox from "../lib/toolbox";
@@ -16,17 +17,15 @@ const cache = { setting: CONFIG };
 
 const config = {
     keys: [
-        //"task",         //帧刷新任务的挂载位置
-        //"special",      //特殊运行的组件挂载位置
         "component",    //挂载所有注册组件的信息
         "resource",     //module和texture等大型资源挂载位置
         "queue",        //通用的队列方法
-        //"todo",         //待渲染的修改都放在这里
         "block",        //原始数据挂载点
         "map",          //short --> name
         "env",          //整体运行环境
         "active",       //编辑的活跃状态
-        "modified",     //编辑过的内容
+        "task",         //编辑的待处理列表
+        "modified",     //编辑后待保存的内容
     ],
     workflow: [
         "update",       //修改数据，处理todo的部分
@@ -36,6 +35,54 @@ const config = {
 }
 
 const self = {
+    getActive: (dom_id) => {
+        const chain = ["active", "containers", dom_id];
+        const active = self.cache.get(chain);
+        if (active.error !== undefined) return false;
+        return active;
+    },
+    getAnimateQueue: (world, dom_id) => {
+        const ani_chain = ["block", dom_id, world, "queue"];
+        const ans = self.cache.get(ani_chain);
+        return ans;
+    },
+    getAnimateMap: (world, dom_id) => {
+        const ani_chain = ["block", dom_id, world, "animate"];
+        const ans = self.cache.get(ani_chain);
+        return ans;
+    },
+    //帧更新的方法队列
+    getLoopQueue: (world, dom_id) => {
+        const queue_chain = ["block", dom_id, world, "loop"];
+        return self.cache.get(queue_chain);
+    },
+    getNameByShort: (short) => {
+        //console.log(cache.map)
+        if (cache.map[short] === undefined) return false;
+        return cache.map[short];
+    },
+    getConvert: () => {
+        return self.cache.get(["env", "world", "accuracy"]);
+    },
+    getSide: () => {
+        return self.cache.get(["env", "world", "side"]);
+    },
+    getElevation: (x, y, world, dom_id) => {
+        return self.cache.get(["block", dom_id, world, `${x}_${y}`, "elevation"]);
+    },
+    getRawByName:(name,list)=>{
+        console.log(name,list);
+        if(!cache.map[name]) return {error:"Invalid adjunct name"};
+        const short=cache.map[name];
+        for(let i=0;i<list.length;i++){
+            const row=list[i];
+            if(row[0]===short) return row[1];
+        }
+        return {error:"No adjunct raw data."};
+    },
+    clone: (obj) => {
+        return JSON.parse(JSON.stringify(obj));
+    },
     component: {
         //注册组件
         reg: (cfg, component) => {
@@ -49,6 +96,9 @@ const self = {
             if (cfg.short !== undefined) {
                 if (cache.map[cfg.short] !== undefined) return { error: `Componet "${cfg.name}" short name conflict with "${cache.map[cfg.short]}", ignore it.` };
                 cache.map[cfg.short] = cfg.name;
+
+                if (cache.map[cfg.name] !== undefined) return { error: `Componet "${cfg.name}" short name exsist", ignore it.` };
+                cache.map[cfg.name] = cfg.short;
             }
 
             //2.挂载组件的方法
@@ -139,16 +189,12 @@ const self = {
     fresh: () => {
         console.log(`ticktok, fresh system.`);
     },
-    struct: () => {
+    structCache: () => {
         const keys = config.keys;
         for (let k in keys) {
             const key = keys[k];
             cache[key] = {};
         }
-    },
-
-    clone: (obj) => {
-        return JSON.parse(JSON.stringify(obj));
     },
     initWorkflow: () => {
         cache.workflow = {
@@ -165,11 +211,7 @@ const self = {
             current: "",         //当前活动的主窗口实例
         }
     },
-    getNameByShort: (short) => {
-        //console.log(cache.map)
-        if (cache.map[short] === undefined) return false;
-        return cache.map[short];
-    },
+    
 
     //TODO,需要处理好time和weather的关系
     structSky: (world, dom_id) => {
@@ -179,15 +221,6 @@ const self = {
         self.cache.set(sky_chain, sky);
     },
 
-    getConvert: () => {
-        return self.cache.get(["env", "world", "accuracy"]);
-    },
-    getSide: () => {
-        return self.cache.get(["env", "world", "side"]);
-    },
-    getElevation: (x, y, world, dom_id) => {
-        return self.cache.get(["block", dom_id, world, `${x}_${y}`, "elevation"]);
-    },
     structSingle: (x, y, world, dom_id) => {
         //1.检测数据是否已经处理了, 更新都是单块数据更新的
         const key = `${x}_${y}`;
@@ -289,7 +322,7 @@ const self = {
     },
     structEntire: (x, y, ext, world, dom_id, cfg, ck) => {
         //1.处理编辑的内容，删除修改过的block的数据
-        const modified_chain = ["cache", "modified", world];
+        const modified_chain = ["cache", "task", world];
         const ups = self.cache.get(modified_chain);
         if (!ups.error && !Toolbox.empty(ups)) {
             console.log(`Modified block.`, ups);
@@ -359,7 +392,6 @@ const self = {
     },
 
     structActive:(x, y, ext, world, dom_id, cfg, ck)=>{
-        console.log(x, y, ext, world, dom_id, cfg);
         const s_chain=["block",dom_id,world,"edit","selected"];
         if(!self.cache.exsist(s_chain)) return ck && ck({error:"No selected adjuct to highlight."});
 
@@ -367,11 +399,9 @@ const self = {
 
         //1.调用std_active方法，计算组件需要显示的部分
         const selected = self.cache.get(s_chain);
-        console.log(selected);
         const raw_chain = ["block", dom_id, world, `${x}_${y}`, "std", selected.adjunct, selected.index];
         if(!self.cache.exsist(raw_chain)) return ck && ck({error:"Invalid adjunct to highlight."});
         const obj=self.cache.get(raw_chain);
-        //console.log(obj);
         
         const va = self.getElevation(x, y, world, dom_id);
         const act=Framework[selected.adjunct].transform.std_active(obj, va);
@@ -388,7 +418,6 @@ const self = {
         }
         
         //2.create grid raw data
-        //const {x,y,elevation,size,offset,face,side,density}=params;
         edit.grid.raw={
             x:x,
             y:y,
@@ -402,7 +431,7 @@ const self = {
                 oy:obj.oy,
                 oz:obj.oz,
             },
-            face:"x",
+            face:selected.face,
             side:self.getSide(),
         }
 
@@ -417,41 +446,87 @@ const self = {
             //self.cache.remove(chain_std);
         }
     },
+
+    backupBlock:(x,y,world,dom_id)=>{
+        const key=`${x}_${y}`;   
+        const chain=["modified",dom_id,world,key];
+        if(!self.cache.exsist(chain)) self.cache.set(chain,{final:null,backup:null});
+        const backup_data=self.cache.get(["block",dom_id,world,key,"raw"]);
+        if(!backup_data || backup_data.error) return {error:`No [ ${x}, ${y} ] raw data to backup`};
+
+        const backup=self.clone(backup_data);
+        chain.push("backup");
+        self.cache.set(chain,backup);
+        return true;
+    },
+
     //修改的入口，通过这里对raw数据进行修改，并标识是否要进行重构
-    todo: (arr, dom_id, world, ck) => {
-        if (arr.length === 0) return ck && ck();
+    excute:(arr, dom_id, world, ck, failed) => {
+        if(failed===undefined) failed=[];
+        if (arr.length === 0) return ck && ck(failed);
         const task = arr.pop();
-        //console.log(task);
+        console.log(JSON.stringify(task));
 
-        //1.按照task对raw的数据进行修改;
+        //1.block task
+        if(task.adjunct==="block" && task.act==="remove"){
+            //1.1. remove function is special, need to isolate it.
+            const bks=[]
+            bks.push([task.param.x,task.param.y]);
+            self.cleanBlocks(bks,world, dom_id);
 
-        //2.将修改的[x,y]推动到新的related block队列里；
+            return self.excute(arr, dom_id, world, ck, failed);
+        }
 
-        //3.重新刷新所有的related block
+        //2.adjunct task;
+        if(!Framework[task.adjunct] ||
+            !Framework[task.adjunct].attribute ||
+            !Framework[task.adjunct].attribute[task.act]
+        ){  
+            failed.push({error:`Todo task failed, raw: ${JSON.stringify(task)}`});
+            return self.excute(arr, dom_id, world, ck, failed); 
+        }
+        const fun=Framework[task.adjunct].attribute[task.act];
 
-        return self.todo(arr, dom_id, world, ck);
+        //2.1. get raw data of adjunct
+        const key=`${task.x}_${task.y}`;
+        const d_chain=["block",dom_id,world,key,"raw","data"];
+        if(!self.cache.exsist(d_chain)){
+            return self.excute(arr, dom_id, world, ck, failed);
+        }
+
+        //2.2. backup the old raw data.
+        const backuped=self.backupBlock(task.x,task.y,world,dom_id);
+        if(backuped!==true){
+
+            return self.excute(arr, dom_id, world, ck, failed);
+        }
+
+        //2.3. get new raw data
+        const block_raw=self.cache.get(d_chain);
+        //console.log(block_raw);
+        if(task.adjunct==="block"){
+
+        }else{
+            const raw_index=2;
+            const raw=self.getRawByName(task.adjunct,block_raw[raw_index]);
+            task.limit!==undefined?fun(task.param,raw,task.limit):fun(task.param,raw);
+            //console.log(`New Data:`,raw);
+            //block_raw[raw_index]=new_raw;
+        }
+        
+
+        //3.remove related block
+        self.cleanBlocks([[task.x,task.y]],world, dom_id);
+
+        //4.save modified block
+        const m_chain=["modified",dom_id,world];
+        if(!self.cache.exsist(m_chain)) self.cache.set(m_chain,{});
+
+        const mlist=self.cache.get(m_chain);
+
+        return self.excute(arr, dom_id, world, ck, failed);
     },
-    getActive: (dom_id) => {
-        const chain = ["active", "containers", dom_id];
-        const active = self.cache.get(chain);
-        if (active.error !== undefined) return false;
-        return active;
-    },
-    getAnimateQueue: (world, dom_id) => {
-        const ani_chain = ["block", dom_id, world, "queue"];
-        const ans = self.cache.get(ani_chain);
-        return ans;
-    },
-    getAnimateMap: (world, dom_id) => {
-        const ani_chain = ["block", dom_id, world, "animate"];
-        const ans = self.cache.get(ani_chain);
-        return ans;
-    },
-    //帧更新的方法队列
-    getLoopQueue: (world, dom_id) => {
-        const queue_chain = ["block", dom_id, world, "loop"];
-        return self.cache.get(queue_chain);
-    },
+    
 }
 
 //构建数据的不同模式
@@ -462,9 +537,9 @@ const worker = {
 }
 
 const Framework = {
-    //在所有系统启动前，运行这个
+    //basic init function, run this before any actions.
     init: () => {
-        self.struct();
+        self.structCache();
         self.initWorkflow();
         self.initActive();
         window.requestAnimationFrame(self.fresh)
@@ -478,29 +553,29 @@ const Framework = {
         if (cache.setting[k] === undefined) return false;
         return cache.setting[k];
     },
-
-    autoStruct: (mode,range,cfg,ck) => {
-        const {x, y, ext,world, container} = range;
-        if(worker[mode]===undefined) return ck && ck({error:"Invalid struct mode"});
-        worker[mode](x, y, ext,world, container,cfg,ck);
-    },
-
     dump: (copy) => {
         if (!copy) return console.log(cache);
         return console.log(self.clone(cache));
     },
 
-    //VBW更新的统一入口，只要动了数据，就执行这里
+    struct: (mode,range,cfg,ck) => {
+        const {x, y, ext,world, container} = range;
+        if(worker[mode]===undefined) return ck && ck({error:"Invalid struct mode"});
+        worker[mode](x, y, ext,world, container,cfg,ck);
+    },
+
+    //main entry for update, any change then call this function
     update: (dom_id, world) => {
         //1.更新player的信息，保存player的信息到本地
         if (Framework.player && Framework.player.autosave) Framework.player.autosave()
 
         //2.处理todo的内容
-        const tasks = self.cache.get(["modified", dom_id, world]);
-        if (tasks.length !== 0) {
+        const tasks = self.cache.get(["task", dom_id, world]);
+        if (!tasks.error && tasks.length !== 0) {
             console.log(`Todo list:`, tasks);
-            self.todo(tasks, dom_id, world, (done) => {
+            self.excute(tasks, dom_id, world, (done) => {
 
+                //self.structEntire();
             });
         }
     },
