@@ -4,9 +4,9 @@ use serde_json::{Value};
 /************************ Public Functions **************************/
 /********************************************************************/
 
-///!important, check every detail of gene raw data
-/// Even there is `enable` method to avoid invalid gene data, it is still necessary to check gene carefully
-///TODO, here to check gene data carefully.
+///!important, check every detail of world setting data
+///TODO, here to check world setting  carefully.
+
 pub fn is_valid_world_setting(input: &str) -> bool {
     let _parsed: Value = match serde_json::from_str(input) {
         Ok(json) => json,
@@ -43,7 +43,7 @@ mod tests {
                 "block":{
                     "size":[16,16,20],              
                     "diff":3,
-                    "status":["raw","public", "private", "locked"]      
+                    "status":["raw","public", "private","banned", "locked"]      
                 },
                 "time":{
                     "slot":1000,

@@ -4,9 +4,11 @@ use {
     //anchor_lang::system_program,
 };
 
-// use crate::constants::{
-//     SOLANA_PDA_LEN,
-// };
+use crate::constants::{
+    SOLANA_PDA_LEN,
+    ResourceMap,
+    VBW_SEEDS_RESOURE_MAP
+};
 
 /********************************************************************/
 /************************ Public Functions **************************/
@@ -66,6 +68,9 @@ pub fn module_recover(
 pub struct AddModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    #[account(mut,seeds = [VBW_SEEDS_RESOURE_MAP],bump)]
+    pub resource_map: Account<'info, ResourceMap>,
 }
 
 #[derive(Accounts)]

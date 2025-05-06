@@ -27,8 +27,9 @@ pub mod vbw {
     ///init whole VBW system
     pub fn init(
         ctx: Context<InitVBW>,
+        root:String,
     ) -> Result<()> {
-        world::init(ctx)
+        world::init(ctx,root)
     }
 
 

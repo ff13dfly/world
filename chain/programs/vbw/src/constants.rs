@@ -9,6 +9,10 @@ use anchor_lang::prelude::*;
 pub const ANCHOR_DESCRIMINATOR_SIZE: usize = 8;
 pub const SOLANA_PDA_LEN:usize=8;
 pub const VBW_WHITELIST_MAP_SIZE:usize=1000;     //whitelist map size
+pub const VBW_WORLD_LIST_SIZE:usize=800; 
+pub const VBW_RESOURE_MAP_SIZE:usize=1200; 
+pub const VBW_TEXTURE_LIST_SIZE:usize=3000;
+pub const VBW_MODULE_LIST_SIZE:usize=3600;
 
 ///System setting
 pub const VBW_ROOT_ACCOUNT:&str="GTNgXEzmG2E2d9yX8fwueP4bD2WCgJ3mqvt7sQj6CYYr"; //root of VBW program
@@ -23,12 +27,14 @@ pub const VBW_BLOCK_INIT_PRICE:u64= 1_000_000;      // 0.01 SOL, the block init 
 pub const VBW_SEEDS_WHITE_LIST:&[u8;6]=b"manage";
 pub const VBW_SEEDS_WORLD_LIST:&[u8;6]=b"worlds";
 pub const VBW_SEEDS_ADJUNCT_LIST:&[u8;7]=b"adjunct";
-pub const VBW_SEEDS_WORLD_COUNT:&[u8;9]=b"w_counter";
-pub const VBW_SEEDS_TEXTURE_BANNED_LIST:&[u8;10]=b"bd_texture";
-pub const VBW_SEEDS_MODULE_BANNED_LIST:&[u8;9]=b"bd_module";
-pub const VBW_SEEDS_BLOCK_BANNED_LIST:&[u8;8]=b"bd_block";
-pub const VBW_SEEDS_WORLD_RECIPIENT:&[u8;11]=b"w_recipient";
 pub const VBW_SEEDS_BLOCK_DATA:&[u8;6]=b"b_data";
+pub const VBW_SEEDS_WORLD_COUNT:&[u8;9]=b"w_counter";
+pub const VBW_SEEDS_TEXTURE_COUNT:&[u8;9]=b"c_texture";
+pub const VBW_SEEDS_MODULE_COUNT:&[u8;8]=b"c_module";
+
+pub const VBW_SEEDS_TEXTURE_LIST:&[u8;7]=b"texture";
+pub const VBW_SEEDS_MODULE_LIST:&[u8;6]=b"module";
+pub const VBW_SEEDS_RESOURE_MAP:&[u8;6]=b"resmap";
 
 /********************************************************************/
 /************************* World Related ****************************/
@@ -52,11 +58,15 @@ impl WorldList {
 }
 
 #[account]
+pub struct AdjunctMap {
+
+}
+
+#[account]
 #[derive(InitSpace)]
 pub struct WorldData {
     #[max_len(200)]         
     pub data: String,       //JSON world setting
-    pub status: u32,        //wether close to mint
     pub start: u64,         //world start slot height
     pub close: u64,         //all blocks are sold out slot height
 }
@@ -67,28 +77,54 @@ pub struct WorldData {
 
 //single VBW block setting
 #[account]
-//#[derive(InitSpace)]
+#[derive(InitSpace)]
 pub struct BlockData {
-    //#[max_len(30)] 
+    #[max_len(30)] 
     pub account: String,
-    //#[max_len(30)] 
+    #[max_len(30)] 
     pub owner: String,              //owner of block 
+    pub price: u32,                 //selling price
     pub create: u64,                //create slot height
     pub update: u64,                //last update slot height
-    pub status: u32,                //block status
+    pub status: u32,                //block status ["public", "private","banned", "locked"]
 }
 
 /********************************************************************/
 /************************ Resource Related **************************/
 /********************************************************************/
 
+#[account]
+#[derive(InitSpace)]
+pub struct ResourceFootprint {
+    exsist:bool,        //wether init
+    stamp:u64,          //slot height
+}
+
+#[account]
+pub struct TextureList {
+    list:Vec<TextureData>,
+}
+
+#[account]
+pub struct TextureCounter {
+    data:u64,
+}
+
 //single texture data struct
 #[account]
+#[derive(InitSpace)]
 pub struct TextureData {
+    #[max_len(30)] 
     pub ipfs: String,     //JSON world setting
+    #[max_len(30)] 
     pub owner: String,    //creator of gene to accept token
     pub create: u64,      //create slot height
     pub status: u32,      //block status
+}
+
+#[account]
+pub struct ModuleList {
+    list:Vec<ModuleData>,
 }
 
 //single module data struct
@@ -138,7 +174,8 @@ impl WorldCounter {
 #[account]
 pub struct WhiteList{
     pub data: Vec<String>,
-    pub recipient:String,
+    pub recipient:String,           //fee to pay
+    pub root:String,                //VBW root manage account
 }
 
 impl WhiteList {

@@ -4,11 +4,14 @@ use {
     //anchor_lang::system_program,
 };
 
-// use crate::constants::{
-//     SOLANA_PDA_LEN,
-//     BlockData,
-//     VBW_SEEDS_BLOCK_DATA,
-// };
+use crate::constants::{
+    SOLANA_PDA_LEN,
+    WorldCounter,
+    BlockData,
+    VBW_SEEDS_WORLD_COUNT,
+    VBW_SEEDS_BLOCK_DATA,
+};
+
 
 /********************************************************************/
 /************************ Public Functions **************************/
@@ -139,6 +142,27 @@ pub fn recover(
 pub struct MintBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    /// Record of block
+    #[account(
+        init_if_needed,
+        space = SOLANA_PDA_LEN + BlockData::INIT_SPACE,
+        payer = payer,
+        seeds = [
+            VBW_SEEDS_BLOCK_DATA,
+            //x,
+            //y,
+            //world,
+        ],
+        bump,
+    )]
+    pub block_data: Account<'info, BlockData >,
+
+    //#[account(mut,seeds = [VBW_SEEDS_WORLD_COUNT,world],bump)]
+    #[account(mut,seeds = [VBW_SEEDS_WORLD_COUNT],bump)]
+    pub world_counter: Account<'info, WorldCounter>,
+
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -146,6 +170,10 @@ pub struct MintBlock<'info> {
 pub struct UpdateBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    pub block_data: Account<'info, BlockData>,
+
 }
 
 #[derive(Accounts)]
@@ -153,6 +181,9 @@ pub struct UpdateBlock<'info> {
 pub struct SellBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    pub block_data: Account<'info, BlockData>,
 }
 
 #[derive(Accounts)]
@@ -160,6 +191,9 @@ pub struct SellBlock<'info> {
 pub struct BuyBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    pub block_data: Account<'info, BlockData>,
 }
 
 #[derive(Accounts)]
@@ -167,6 +201,9 @@ pub struct BuyBlock<'info> {
 pub struct RevokeBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    pub block_data: Account<'info, BlockData>,
 }
 
 #[derive(Accounts)]
@@ -174,6 +211,9 @@ pub struct RevokeBlock<'info> {
 pub struct ComplainBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    pub block_data: Account<'info, BlockData>,
 }
 
 #[derive(Accounts)]
@@ -181,4 +221,7 @@ pub struct ComplainBlock<'info> {
 pub struct RecoverBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    pub block_data: Account<'info, BlockData>,
 }
