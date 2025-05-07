@@ -9,20 +9,18 @@ use crate::constants::{
     VBW_WORLD_LIST_SIZE,
     VBW_RESOURE_MAP_SIZE,
     VBW_WHITELIST_MAP_SIZE,
-    VBW_TEXTURE_LIST_SIZE,
-    VBW_MODULE_LIST_SIZE,
     WorldList,
     WhiteList,
     ResourceMap,
     WorldCounter,
-    TextureList,
-    ModuleList,
+    ModuleCounter,
+    TextureCounter,
     VBW_SEEDS_WORLD_LIST,
     VBW_SEEDS_RESOURE_MAP,
     VBW_SEEDS_WHITE_LIST,
     VBW_SEEDS_WORLD_COUNT,
-    VBW_SEEDS_TEXTURE_LIST,
-    VBW_SEEDS_MODULE_LIST,
+    VBW_SEEDS_MODULE_COUNT,
+    VBW_SEEDS_TEXTURE_COUNT,
 };
 
 /********************************************************************/
@@ -31,8 +29,9 @@ use crate::constants::{
 
 
 pub fn init(
-    _ctx: Context<InitVBW>,     //default from system
-    _root:String,               //root address
+    ctx: Context<InitVBW>,     //default from system
+    root:String,               //root address
+    recipient:String,
 ) -> Result<()> {   
 
     //1. create world necessary accounts.
@@ -43,7 +42,29 @@ pub fn init(
 
     //2. create management accounts.
     //2.1. whitelist of manage for whole system. ( ban texture, ban module ) 
+    let white = &mut ctx.accounts.whitelist_account;
+    white.push(root.clone());
+    white.recipient(recipient);
+    white.replace(root);
+
+    let value:u64=33;
+    *ctx.accounts.module_counter= ModuleCounter{
+        value
+    };
+
+    let value:u64=12;
+    *ctx.accounts.texture_counter= TextureCounter{
+        value
+    };
+
     //2.2. whitelist of manage for single world. ( ban block )
+
+    // let whitelist = &mut ctx.accounts.white_account;
+
+    // let value:u64=0;
+    // *ctx.accounts.world_counter= LuckCounter{
+    //     value
+    // };
 
     Ok(())
 }
@@ -91,7 +112,10 @@ pub struct InitVBW<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
+    /**************************************/
     /************ PDA accounts ************/
+    /**************************************/
+
     #[account(
         init,
         space = SOLANA_PDA_LEN + VBW_WHITELIST_MAP_SIZE, 
@@ -101,20 +125,16 @@ pub struct InitVBW<'info> {
     )]
     pub whitelist_account: Account<'info, WhiteList>,
 
-
     //FIXME, need to relocate the size of `world_list` in final version
     #[account(
         init,
         space = SOLANA_PDA_LEN + VBW_WORLD_LIST_SIZE,     
         payer = payer,
-        seeds = [VBW_SEEDS_TEXTURE_LIST],
+        seeds = [VBW_SEEDS_WORLD_LIST],
         bump,
     )]
     pub world_list: Account<'info, WorldList>, 
 
-    //important, need to take care of `resource_map`, as the size rise up, need more account size, even overflow
-    //importnat, used to check wether the IPFS link is exsisted.
-    //FIXME, need to relocate the size of `resource_map` in final version
     // #[account(
     //     init,
     //     space = SOLANA_PDA_LEN + VBW_RESOURE_MAP_SIZE,     
@@ -122,28 +142,25 @@ pub struct InitVBW<'info> {
     //     seeds = [VBW_SEEDS_RESOURE_MAP],
     //     bump,
     // )]
-    // pub resource_map: Account<'info, ResourceMap>,
+    // pub world_counter: Account<'info, ResourceMap>,
 
+    #[account(
+        init,
+        space = SOLANA_PDA_LEN + ModuleCounter::INIT_SPACE,
+        payer = payer,
+        seeds = [VBW_SEEDS_MODULE_COUNT],
+        bump,
+    )]
+    pub module_counter: Account<'info, ModuleCounter>,
 
-    //FIXME, counter to manage the texture
-    // #[account(
-    //     init,
-    //     space = SOLANA_PDA_LEN + VBW_TEXTURE_LIST_SIZE,     
-    //     payer = payer,
-    //     seeds = [VBW_SEEDS_RESOURE_MAP],
-    //     bump,
-    // )]
-    // pub texture_list: Account<'info, TextureList>,
-
-    //FIXME, counter to manage the module
-    // #[account(
-    //     init,
-    //     space = SOLANA_PDA_LEN + VBW_MODULE_LIST_SIZE,     
-    //     payer = payer,
-    //     seeds = [VBW_SEEDS_MODULE_LIST],
-    //     bump,
-    // )]
-    // pub module_list: Account<'info, ModuleList>,
+    #[account(
+        init,
+        space = SOLANA_PDA_LEN + TextureCounter::INIT_SPACE,
+        payer = payer,
+        seeds = [VBW_SEEDS_TEXTURE_COUNT],
+        bump,
+    )]
+    pub texture_counter: Account<'info, TextureCounter>,
 
     pub system_program: Program<'info, System>,
 }
@@ -161,7 +178,7 @@ pub struct NewWorld<'info> {
         payer = payer,
         seeds = [
             VBW_SEEDS_WORLD_COUNT,
-            //index
+            &index.to_le_bytes()
         ],
         bump,
     )]

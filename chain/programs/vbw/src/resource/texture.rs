@@ -35,7 +35,7 @@ pub fn texture_add(
 
 pub fn texture_approve(
     _ctx: Context<ApproveTexture>, 
-    _index:u64,                      //texture index in queue
+    _index:u32,                      //texture index in queue
 ) -> Result<()> {
     
     Ok(())
@@ -44,7 +44,7 @@ pub fn texture_approve(
 pub fn texture_complain(
     _ctx: Context<ComplainTexture>, //default from system
     _json:String,                     //complain JSON string
-    _index:u64,                      //texture index in queue
+    _index:u32,                      //texture index in queue
 ) -> Result<()> {
     
     Ok(())
@@ -52,7 +52,7 @@ pub fn texture_complain(
 
 pub fn texture_recover(
     _ctx: Context<RecoverTexture>,      //default from system
-    _index:u64,                    //texture index in queue
+    _index:u32,                    //texture index in queue
 ) -> Result<()> {
     
     Ok(())

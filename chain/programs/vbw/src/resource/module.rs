@@ -32,7 +32,7 @@ pub fn module_add(
 
 pub fn module_approve(
     _ctx: Context<ApproveModule>,      //default from system                   
-    _index:u64,
+    _index:u32,
 ) -> Result<()> {
 
     Ok(())
@@ -41,7 +41,7 @@ pub fn module_approve(
 pub fn module_complain(
     _ctx: Context<ComplainModule>,      //default from system
     _json:String,                     //complain JSON string                 
-    _index:u64,
+    _index:u32,
 ) -> Result<()> {
 
     Ok(())
@@ -49,7 +49,7 @@ pub fn module_complain(
 
 pub fn module_recover(
     _ctx: Context<RecoverModule>,      //default from system                   
-    _index:u64,
+    _index:u32,
 ) -> Result<()> {
 
     Ok(())
@@ -115,7 +115,7 @@ pub struct ComplainModule<'info> {
         space = SOLANA_PDA_LEN + ComplainData::INIT_SPACE,     
         payer = payer,
         seeds = [
-            VBW_SEEDS_COMPLAIN_DATA,      //need to set [u8;4] to avoid error
+            VBW_SEEDS_MODULE_DATA,      //need to set [u8;4] to avoid error
             &index.to_le_bytes(),
         ],
         bump,
@@ -124,7 +124,6 @@ pub struct ComplainModule<'info> {
 
     pub system_program: Program<'info, System>,
 }
-
 
 #[derive(Accounts)]
 #[instruction(index:u32)]

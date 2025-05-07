@@ -152,9 +152,9 @@ pub struct MintBlock<'info> {
         payer = payer,
         seeds = [
             VBW_SEEDS_BLOCK_DATA,
-            //x,
-            //y,
-            //world,
+            &x.to_le_bytes(),
+            &y.to_le_bytes(),
+            &world.to_le_bytes(),
         ],
         bump,
     )]
@@ -173,7 +173,12 @@ pub struct UpdateBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    #[account(mut,seeds = [
+        VBW_SEEDS_BLOCK_DATA,
+        &x.to_le_bytes(),
+        &y.to_le_bytes(),
+        &world.to_le_bytes(),
+    ],bump)]
     pub block_data: Account<'info, BlockData>,
 
 }
@@ -184,7 +189,12 @@ pub struct SellBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    #[account(mut,seeds = [
+        VBW_SEEDS_BLOCK_DATA,
+        &x.to_le_bytes(),
+        &y.to_le_bytes(),
+        &world.to_le_bytes(),
+    ],bump)]
     pub block_data: Account<'info, BlockData>,
 }
 
@@ -194,7 +204,12 @@ pub struct BuyBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    #[account(mut,seeds = [
+        VBW_SEEDS_BLOCK_DATA,
+        &x.to_le_bytes(),
+        &y.to_le_bytes(),
+        &world.to_le_bytes(),
+    ],bump)]
     pub block_data: Account<'info, BlockData>,
 }
 
@@ -204,7 +219,12 @@ pub struct RevokeBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    #[account(mut,seeds = [
+        VBW_SEEDS_BLOCK_DATA,
+        &x.to_le_bytes(),
+        &y.to_le_bytes(),
+        &world.to_le_bytes(),
+    ],bump)]
     pub block_data: Account<'info, BlockData>,
 }
 
@@ -214,7 +234,12 @@ pub struct ComplainBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    #[account(mut,seeds = [
+        VBW_SEEDS_BLOCK_DATA,
+        &x.to_le_bytes(),
+        &y.to_le_bytes(),
+        &world.to_le_bytes(),
+    ],bump)]
     pub block_data: Account<'info, BlockData>,
 
     #[account(
@@ -240,6 +265,11 @@ pub struct RecoverBlock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
+    #[account(mut,seeds = [
+        VBW_SEEDS_BLOCK_DATA,
+        &x.to_le_bytes(),
+        &y.to_le_bytes(),
+        &world.to_le_bytes(),
+    ],bump)]
     pub block_data: Account<'info, BlockData>,
 }

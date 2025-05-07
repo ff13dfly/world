@@ -22,31 +22,26 @@ pub fn block(
     _x:u32,
     _y:u32,
     _world:u32,
-) -> Result<()> {   
-
+) -> Result<()> { 
 
     Ok(())
 }
 
 pub fn texture(
     _ctx: Context<BanTexture>,      //default from system
-    _index: u64,
+    _index: u32,
 ) -> Result<()> {   
-
 
     Ok(())
 }
 
 pub fn module(
     _ctx: Context<BanModule>,      //default from system
-    _index: u64,
+    _index: u32,
 ) -> Result<()> {   
-
 
     Ok(())
 }
-
-
 
 /********************************************************************/
 /*********************** Private Functions **************************/

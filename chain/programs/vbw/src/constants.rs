@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 ///Accounts space setting
 pub const ANCHOR_DESCRIMINATOR_SIZE: usize = 8;
 pub const SOLANA_PDA_LEN:usize=8;
-pub const VBW_WHITELIST_MAP_SIZE:usize=1000;     //whitelist map size
+pub const VBW_WHITELIST_MAP_SIZE:usize=500;     //whitelist map size
 pub const VBW_WORLD_LIST_SIZE:usize=800; 
 pub const VBW_RESOURE_MAP_SIZE:usize=1200; 
 pub const VBW_TEXTURE_LIST_SIZE:usize=3000;
@@ -24,11 +24,11 @@ pub const VBW_WORLD_MAX:u32= 99;              //offset to get the block hash
 pub const VBW_BLOCK_INIT_PRICE:u64= 1_000_000;      // 0.01 SOL, the block init price.
 
 ///PDA accounts seeds
-pub const VBW_SEEDS_WHITE_LIST:&[u8;6]=b"manage";
+pub const VBW_SEEDS_WHITE_LIST:&[u8;5]=b"white";
 pub const VBW_SEEDS_WORLD_LIST:&[u8;6]=b"worlds";
 pub const VBW_SEEDS_ADJUNCT_LIST:&[u8;7]=b"adjunct";
-pub const VBW_SEEDS_BLOCK_DATA:&[u8;6]=b"b_data";
-pub const VBW_SEEDS_WORLD_COUNT:&[u8;9]=b"w_counter";
+pub const VBW_SEEDS_BLOCK_DATA:&[u8;4]=b"b_dt";
+pub const VBW_SEEDS_WORLD_COUNT:&[u8;4]=b"w_ct";
 pub const VBW_SEEDS_TEXTURE_COUNT:&[u8;9]=b"c_texture";
 pub const VBW_SEEDS_MODULE_COUNT:&[u8;8]=b"c_module";
 pub const VBW_SEEDS_TEXTURE_DATA:&[u8;4]=b"d_tx";
@@ -74,6 +74,31 @@ pub struct WorldData {
     pub close: u64,         //all blocks are sold out slot height
 }
 
+//the total supply of LUCK token
+#[account]
+#[derive(InitSpace)]
+pub struct WorldCounter {
+    pub value: u64,
+}
+impl WorldCounter {
+    pub fn inc(&mut self, amount:u64) {
+        self.value += amount
+    }
+
+    ///!important, only on Devnet
+    //FIXME, DEBUG only, need to remove when deploy on mainnet
+    pub fn set(&mut self, amount:u64) {
+        self.value = amount
+    }
+
+    ///!important, only on Devnet
+    //FIXME, DEBUG only, need to remove when deploy on mainnet
+    pub fn max(&mut self) {
+        self.value = 4096 * 4096
+    }
+}
+
+
 /********************************************************************/
 /************************* Block Related ****************************/
 /********************************************************************/
@@ -103,14 +128,45 @@ pub struct ResourceFootprint {
     stamp:u64,          //slot height
 }
 
+//resource map to check IPFS file
 #[account]
-pub struct TextureList {
-    list:Vec<TextureData>,
+pub struct ResourceMap {
+
+}
+
+//single module data struct
+#[account]
+#[derive(InitSpace)]
+pub struct ModuleData {
+    #[max_len(30)] 
+    pub ipfs: String,     //JSON world setting
+    #[max_len(30)] 
+    pub owner: String,    //creator of gene to accept token
+    pub create: u64,      //create slot height
+    pub status: u32,      //block status  ["created","approved","banned"]
 }
 
 #[account]
-pub struct TextureCounter {
-    data:u64,
+#[derive(InitSpace)]
+pub struct ModuleCounter {
+    pub value: u64,
+}
+impl ModuleCounter {
+    pub fn inc(&mut self, amount:u64) {
+        self.value += amount
+    }
+
+    ///!important, only on Devnet
+    //FIXME, DEBUG only, need to remove when deploy on mainnet
+    pub fn set(&mut self, amount:u64) {
+        self.value = amount
+    }
+
+    ///!important, only on Devnet
+    //FIXME, DEBUG only, need to remove when deploy on mainnet
+    pub fn max(&mut self) {
+        self.value = 4096 * 4096
+    }
 }
 
 //single texture data struct
@@ -126,35 +182,11 @@ pub struct TextureData {
 }
 
 #[account]
-pub struct ModuleList {
-    list:Vec<ModuleData>,
-}
-
-//single module data struct
-#[account]
 #[derive(InitSpace)]
-pub struct ModuleData {
-    #[max_len(30)] 
-    pub ipfs: String,     //JSON world setting
-    #[max_len(30)] 
-    pub owner: String,    //creator of gene to accept token
-    pub create: u64,      //create slot height
-    pub status: u32,      //block status  ["created","approved","banned"]
-}
-
-//resource map to check IPFS file
-#[account]
-pub struct ResourceMap {
-
-}
-
-//the total supply of LUCK token
-#[account]
-#[derive(InitSpace)]
-pub struct WorldCounter {
+pub struct TextureCounter {
     pub value: u64,
 }
-impl WorldCounter {
+impl TextureCounter {
     pub fn inc(&mut self, amount:u64) {
         self.value += amount
     }
@@ -179,8 +211,8 @@ impl WorldCounter {
 //whitelist of managers, allow to manage the world
 #[account]
 pub struct WhiteList{
-    pub data: Vec<String>,
-    pub recipient:String,           //fee to pay
+    pub data: Vec<String>,          //manager list
+    pub recipient:String,           //fee recipient
     pub root:String,                //VBW root manage account
 }
 
@@ -190,7 +222,7 @@ impl WhiteList {
     }
 
     pub fn replace(&mut self, root:String) {
-        self.data[0] = root
+        self.root = root
     }
     
     pub fn remove(&mut self,manager:String) {
