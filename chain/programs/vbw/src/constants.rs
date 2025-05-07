@@ -31,6 +31,9 @@ pub const VBW_SEEDS_BLOCK_DATA:&[u8;6]=b"b_data";
 pub const VBW_SEEDS_WORLD_COUNT:&[u8;9]=b"w_counter";
 pub const VBW_SEEDS_TEXTURE_COUNT:&[u8;9]=b"c_texture";
 pub const VBW_SEEDS_MODULE_COUNT:&[u8;8]=b"c_module";
+pub const VBW_SEEDS_TEXTURE_DATA:&[u8;4]=b"d_tx";
+pub const VBW_SEEDS_MODULE_DATA:&[u8;4]=b"d_md";
+pub const VBW_SEEDS_COMPLAIN_DATA:&[u8;4]=b"d_cp";
 
 pub const VBW_SEEDS_TEXTURE_LIST:&[u8;7]=b"texture";
 pub const VBW_SEEDS_MODULE_LIST:&[u8;6]=b"module";
@@ -119,7 +122,7 @@ pub struct TextureData {
     #[max_len(30)] 
     pub owner: String,    //creator of gene to accept token
     pub create: u64,      //create slot height
-    pub status: u32,      //block status
+    pub status: u32,      //block status  ["created","approved","banned"]
 }
 
 #[account]
@@ -129,11 +132,14 @@ pub struct ModuleList {
 
 //single module data struct
 #[account]
+#[derive(InitSpace)]
 pub struct ModuleData {
+    #[max_len(30)] 
     pub ipfs: String,     //JSON world setting
+    #[max_len(30)] 
     pub owner: String,    //creator of gene to accept token
     pub create: u64,      //create slot height
-    pub status: u32,      //block status
+    pub status: u32,      //block status  ["created","approved","banned"]
 }
 
 //resource map to check IPFS file
@@ -196,7 +202,16 @@ impl WhiteList {
     }
 }
 
-
+#[account]
+#[derive(InitSpace)]
+pub struct ComplainData {
+    pub category: u32,          //["block","texture","module"]
+    #[max_len(30)]
+    pub complain: String,   //creator of gene to accept token
+    #[max_len(30)]
+    pub result:String,      //response result data
+    pub create: u64,        //create slot height
+}
 
 #[error_code]
 pub enum ErrorCode {

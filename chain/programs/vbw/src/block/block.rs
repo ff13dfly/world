@@ -8,8 +8,10 @@ use crate::constants::{
     SOLANA_PDA_LEN,
     WorldCounter,
     BlockData,
+    ComplainData,
     VBW_SEEDS_WORLD_COUNT,
     VBW_SEEDS_BLOCK_DATA,
+    VBW_SEEDS_COMPLAIN_DATA,
 };
 
 
@@ -214,6 +216,22 @@ pub struct ComplainBlock<'info> {
 
     #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
     pub block_data: Account<'info, BlockData>,
+
+    #[account(
+        init,
+        space = SOLANA_PDA_LEN + ComplainData::INIT_SPACE,     
+        payer = payer,
+        seeds = [
+            VBW_SEEDS_COMPLAIN_DATA,      //need to set [u8;4] to avoid error
+            &x.to_le_bytes(),
+            &y.to_le_bytes(),
+            &world.to_le_bytes(),
+        ],
+        bump,
+    )]
+    pub complain_data: Account<'info, ComplainData>,
+
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]

@@ -138,8 +138,9 @@ pub mod vbw {
     pub fn add_texture(
         ctx: Context<AddTexture>,
         ipfs: String,
+        index:  u32,
     ) -> Result<()> {
-        texture::texture_add(ctx,ipfs)
+        texture::texture_add(ctx,ipfs,index)
     }
 
     ///complain when texture content is illeagale
@@ -183,8 +184,9 @@ pub mod vbw {
     pub fn add_module(
         ctx: Context<AddModule>,
         ipfs: String,
+        index:  u32,
     ) -> Result<()> {
-        module::module_add(ctx,ipfs)
+        module::module_add(ctx,ipfs,index)
     }
 
     ///complain when texture content is illeagale
