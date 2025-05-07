@@ -63,6 +63,8 @@ pub struct BanBlock<'info> {
 
     #[account(mut,seeds = [VBW_SEEDS_BLOCK_DATA],bump)]
     pub block_data: Account<'info, BlockData>,
+
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]
@@ -72,6 +74,8 @@ pub struct BanTexture<'info> {
 
     #[account(mut,seeds = [VBW_SEEDS_TEXTURE_DATA],bump)]
     pub texture_data: Account<'info, TextureData>,
+
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]
@@ -81,4 +85,6 @@ pub struct BanModule<'info> {
 
     #[account(mut,seeds = [VBW_SEEDS_MODULE_DATA],bump)]
     pub texture_data: Account<'info, ModuleData>,
+
+    pub clock: Sysvar<'info, Clock>,
 }

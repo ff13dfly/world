@@ -29,10 +29,26 @@ const reqs={
     await self.info.whitelist();
     await self.info.modulecounter();
     await self.info.texturecounter();
-    self.output.end(`Signature of init: ${sign_init}`);
+    self.output.end(`Signature of "init": ${sign_init}`);
   },
-  create:async()=>{
-
+  create:async(index,json)=>{
+    const users=await self.init({balance:false});
+    self.output.start(`Create new world`);
+    
+    const sign_init= await program.methods
+      .startWorld(index,json)
+      .accounts({
+        payer:users.root.pair.publicKey,
+      })
+      .signers([users.root.pair])
+      .rpc()
+      .catch((err)=>{
+        self.output.hr("Got Error");
+        console.log(err);
+      });
+    await self.info.worldlist();
+    await self.info.worldcounter(index);
+    self.output.end(`Signature of "startWorld": ${sign_init}`);
   },
 }
 
@@ -43,8 +59,34 @@ describe("VBW world functions test.",() => {
   });
 
   it("Create a new world.", async () => {
-    await reqs.create();
-
+    const cfg={
+      "name":"NAME_OF_WORLD",
+      "desc":"Description of new world",
+      "accuracy":1000,
+      "size":[4096,4096],
+      "side":[16,16],
+      "block":{
+          "size":[16,16,20],              
+          "diff":3,
+          "status":["raw","public", "private","banned", "locked"]      
+      },
+      "time":{
+          "slot":1000,
+          "year":360,
+          "month":12,
+          "hour":24
+      },
+      "sky":{
+          "sun":1,
+          "moon":3
+      },
+      "weather":{
+          "category":["cloud","rain","snow"],       
+          "grading":8
+      }
+    }
+    const index=0;
+    const json=JSON.stringify(cfg);
+    await reqs.create(index,json);
   });
-
 });

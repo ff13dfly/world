@@ -20,11 +20,12 @@ use crate::constants::{
 /********************************************************************/
 
 pub fn mint(
-    _ctx: Context<MintBlock>,      //default from system
+    ctx: Context<MintBlock>,      //default from system
     _x:u32,                      
     _y:u32,
     _world:u32,
 ) -> Result<()> {
+
     //1. input check
     //1.1 wether x overflow
     //1.2 wether y overflow
@@ -34,17 +35,49 @@ pub fn mint(
 
     //3. init block
 
-    //let data = &mut ctx.accounts.block_data;
+    // pub struct BlockData {
+    //     #[max_len(30)] 
+    //     pub data: String,
+    //     #[max_len(30)] 
+    //     pub owner: String,              //owner of block 
+    //     pub price: u32,                 //selling price
+    //     pub create: u64,                //create slot height
+    //     pub update: u64,                //last update slot height
+    //     pub status: u32,                //block status ["public", "private","selling","banned", "locked"]
+    // }
+
+    //let block = &mut ctx.accounts.block_data;
+    let clock = &ctx.accounts.clock;
+
+    let data=String::from("[]");
+    let payer_pubkey = ctx.accounts.payer.key();
+    let owner=payer_pubkey.to_string();
+    let price:u32=0;
+    let create=clock.slot.clone();
+    let update=clock.slot;
+    let status:u32=0;
+    *ctx.accounts.block_data= BlockData{
+        data,
+        owner,
+        price,
+        create,
+        update,
+        status
+    };
+
+    //inc minted amount
+    let minted = &mut ctx.accounts.world_counter;
+    minted.inc();
 
     Ok(())
 }
 
 pub fn update(
-    _ctx: Context<UpdateBlock>,      //default from system
+    ctx: Context<UpdateBlock>,      //default from system
     _x:u32,                      
     _y:u32,
     _world:u32,
-    _account:String,                 //Account storage the block data
+    data:String,                 //block data storaged on chain
 )-> Result<()> {
 
     //1. input check
@@ -54,45 +87,73 @@ pub fn update(
     //1.4 wether vallid account address
 
     //2. update the account address on block
-
+    let clock = &ctx.accounts.clock;
+    let bk= &mut ctx.accounts.block_data;
+    bk.data=data;
+    bk.update=clock.slot;
     Ok(())
 }
 
 
 pub fn sell(
-    _ctx: Context<SellBlock>,      //default from system
+    ctx: Context<SellBlock>,      //default from system
     _x:u32,                      
     _y:u32,
     _world:u32,
-    _price:u32,                      //Selling price in SOL
+    price:u32,                      //Selling price in SOL
 ) -> Result<()> {
 
     //1. input check
+
+    let clock = &ctx.accounts.clock;
+    let bk= &mut ctx.accounts.block_data;
+    bk.price=price;
+    bk.update=clock.slot;
+    bk.status=2;            //FIXME, here to set an enum to select
 
     Ok(())
 }
 
 pub fn buy(
-    _ctx: Context<BuyBlock>,      //default from system
+    ctx: Context<BuyBlock>,      //default from system
     _x:u32,                      
     _y:u32,
     _world:u32,
 ) -> Result<()> {
 
     //1. input check
+
+    let payer_pubkey = ctx.accounts.payer.key();
+    let owner=payer_pubkey.to_string();
+
+    let clock = &ctx.accounts.clock;
+
+    let bk= &mut ctx.accounts.block_data;
+    bk.owner=owner;
+    bk.update=clock.slot;
+    bk.price=0;
 
     Ok(())
 }
 
 
 pub fn revoke(
-    _ctx: Context<RevokeBlock>,      //default from system
+    ctx: Context<RevokeBlock>,      //default from system
     _x:u32,                      
     _y:u32,
     _world:u32,
 ) -> Result<()> {
 
     //1. input check
+
+    // let payer_pubkey = ctx.accounts.payer.key();
+    // let owner=payer_pubkey.to_string();
+
+    let clock = &ctx.accounts.clock;
+
+    let bk= &mut ctx.accounts.block_data;
+    bk.update=clock.slot;
+    bk.price=0;
 
     Ok(())
 }
@@ -160,11 +221,20 @@ pub struct MintBlock<'info> {
     )]
     pub block_data: Account<'info, BlockData >,
 
-    //#[account(mut,seeds = [VBW_SEEDS_WORLD_COUNT,world],bump)]
-    #[account(mut,seeds = [VBW_SEEDS_WORLD_COUNT],bump)]
+    #[account(
+        init_if_needed,
+        space = SOLANA_PDA_LEN + WorldCounter::INIT_SPACE,     
+        payer = payer,
+        seeds = [
+            VBW_SEEDS_WORLD_COUNT,
+            &world.to_le_bytes(),
+        ],
+        bump,
+    )]
     pub world_counter: Account<'info, WorldCounter>,
 
     pub system_program: Program<'info, System>,
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]
@@ -181,6 +251,7 @@ pub struct UpdateBlock<'info> {
     ],bump)]
     pub block_data: Account<'info, BlockData>,
 
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]
@@ -196,6 +267,8 @@ pub struct SellBlock<'info> {
         &world.to_le_bytes(),
     ],bump)]
     pub block_data: Account<'info, BlockData>,
+
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]
@@ -211,6 +284,8 @@ pub struct BuyBlock<'info> {
         &world.to_le_bytes(),
     ],bump)]
     pub block_data: Account<'info, BlockData>,
+
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]
@@ -226,6 +301,8 @@ pub struct RevokeBlock<'info> {
         &world.to_le_bytes(),
     ],bump)]
     pub block_data: Account<'info, BlockData>,
+
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]
@@ -247,7 +324,7 @@ pub struct ComplainBlock<'info> {
         space = SOLANA_PDA_LEN + ComplainData::INIT_SPACE,     
         payer = payer,
         seeds = [
-            VBW_SEEDS_COMPLAIN_DATA,      //need to set [u8;4] to avoid error
+            VBW_SEEDS_COMPLAIN_DATA,    //need to set [u8;4] to avoid error
             &x.to_le_bytes(),
             &y.to_le_bytes(),
             &world.to_le_bytes(),
@@ -257,6 +334,8 @@ pub struct ComplainBlock<'info> {
     pub complain_data: Account<'info, ComplainData>,
 
     pub system_program: Program<'info, System>,
+
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]
@@ -272,4 +351,6 @@ pub struct RecoverBlock<'info> {
         &world.to_le_bytes(),
     ],bump)]
     pub block_data: Account<'info, BlockData>,
+
+    pub clock: Sysvar<'info, Clock>,
 }

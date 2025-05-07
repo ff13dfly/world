@@ -46,12 +46,13 @@ pub const VBW_SEEDS_RESOURE_MAP:&[u8;6]=b"resmap";
 //single VBW world setting
 #[account]
 pub struct WorldList {
-    list:Vec<WorldData>,
+    pub list:Vec<WorldData>,
 }
 impl WorldList {
-    //add new world to world list
-    pub fn add(&mut self, _data:WorldData) {
 
+    //add new world to world list
+    pub fn add(&mut self, data:WorldData) {
+        self.list.push(data)
     }
 
     //when all blocks are sold out, close the world
@@ -68,7 +69,7 @@ pub struct AdjunctMap {
 #[account]
 #[derive(InitSpace)]
 pub struct WorldData {
-    #[max_len(200)]         
+    #[max_len(500)]         
     pub data: String,       //JSON world setting
     pub start: u64,         //world start slot height
     pub close: u64,         //all blocks are sold out slot height
@@ -78,16 +79,16 @@ pub struct WorldData {
 #[account]
 #[derive(InitSpace)]
 pub struct WorldCounter {
-    pub value: u64,
+    pub value: u32,
 }
 impl WorldCounter {
-    pub fn inc(&mut self, amount:u64) {
-        self.value += amount
+    pub fn inc(&mut self) {
+        self.value += 1
     }
 
     ///!important, only on Devnet
     //FIXME, DEBUG only, need to remove when deploy on mainnet
-    pub fn set(&mut self, amount:u64) {
+    pub fn set(&mut self, amount:u32) {
         self.value = amount
     }
 
@@ -108,7 +109,7 @@ impl WorldCounter {
 #[derive(InitSpace)]
 pub struct BlockData {
     #[max_len(30)] 
-    pub account: String,
+    pub data: String,
     #[max_len(30)] 
     pub owner: String,              //owner of block 
     pub price: u32,                 //selling price
@@ -249,4 +250,7 @@ pub struct ComplainData {
 pub enum ErrorCode {
     #[msg("System is inited already.")]
     AlreadyInited,
+
+    #[msg("Invalid world index to start new world.")]
+    InvalidWorldIndex,
 }

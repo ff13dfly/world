@@ -11,6 +11,7 @@ use crate::constants::{
     VBW_WHITELIST_MAP_SIZE,
     WorldList,
     WhiteList,
+    WorldData,
     ResourceMap,
     WorldCounter,
     ModuleCounter,
@@ -21,6 +22,7 @@ use crate::constants::{
     VBW_SEEDS_WORLD_COUNT,
     VBW_SEEDS_MODULE_COUNT,
     VBW_SEEDS_TEXTURE_COUNT,
+    ErrorCode,
 };
 
 /********************************************************************/
@@ -70,9 +72,9 @@ pub fn init(
 }
 
 pub fn start(
-    _ctx: Context<NewWorld>,    //default from system
-    _index:u32,                  //index of world to  start
-    _setting:String,             //world setting as JSON format
+    ctx: Context<NewWorld>,    //default from system
+    index:u32,                  //index of world to  start
+    data:String,                //world setting as JSON format
 ) -> Result<()> {
 
     //0. input check
@@ -82,14 +84,29 @@ pub fn start(
     //1. logical check
     //1.1. ready to start new world.
     
+    let white = &mut ctx.accounts.whitelist_account;
 
-
+    
     //2. create world accounts
     //2.1. world sold counter
 
     //3. write world setting
     //3.1. update new world setting
     //3.2. close the update of old world
+
+    let world_list=&mut ctx.accounts.world_list;
+    if world_list.list.len() != index as usize {
+        return Err(error!(ErrorCode::InvalidWorldIndex));
+    }
+    let clock = &ctx.accounts.clock;
+    let start:u64=clock.slot;
+    let close:u64=0;
+    let n_world=WorldData{
+        data,
+        start,
+        close
+    };
+    world_list.add(n_world);
 
     Ok(())
 }
@@ -163,6 +180,7 @@ pub struct InitVBW<'info> {
     pub texture_counter: Account<'info, TextureCounter>,
 
     pub system_program: Program<'info, System>,
+    
 }
 
 #[derive(Accounts)]
@@ -191,4 +209,5 @@ pub struct NewWorld<'info> {
     pub world_list: Account<'info, WorldList>,
 
     pub system_program: Program<'info, System>,
+    pub clock: Sysvar<'info, Clock>,
 }

@@ -136,23 +136,57 @@ const self={
           const pda_worldlist=self.getPDA([Buffer.from("worlds")],PID);
           const raw=await self.getAccount(pda_worldlist);
           //console.log(data_w);
-          if(raw!==null) console.log(raw.data.toString());
+          if(raw===null) return console.log(`"worldlist" is not created.`)
+            console.log(raw.data.toString());
+        },
+        worldcounter:async (index)=>{
+          const n_index=Buffer.alloc(4);
+          n_index.writeUInt32LE(index);
+          
+          const pda_counter=self.getPDA([
+            Buffer.from("w_ct"),
+            n_index,
+          ],PID);
+          const raw=await self.getAccount(pda_counter);
+          if(raw===null) return console.log(`"worldcounter" is not created.`)
+          console.log(raw.data.toString());
         },
         whitelist:async ()=>{
           const pda_white=self.getPDA([Buffer.from("white")],PID);
           const raw=await self.getAccount(pda_white);
-          if(raw!==null) console.log(raw.data.toString());
+          if(raw===null) return console.log(`"whitelist" is not created.`)
+          console.log(raw.data.toString());
         },
 
         modulecounter:async ()=>{
           const pda_mcounter=self.getPDA([Buffer.from("c_module")],PID);
           const raw=await self.getAccount(pda_mcounter);
-          if(raw!==null) console.log(raw.data.toString());
+          if(raw===null) return console.log(`"modulecounter" is not created.`)
+          console.log(raw.data.toString());
         },
         texturecounter:async ()=>{
           const pda_tcounter=self.getPDA([Buffer.from("c_texture")],PID);
           const raw=await self.getAccount(pda_tcounter);
-          if(raw!==null) console.log(raw.data.toString());
+          if(raw===null) return console.log(`"texturecounter" is not created.`)
+          console.log(raw.data.toString());
+        },
+        blockdata:async (x,y,world)=>{
+          const x_u32=Buffer.alloc(4);
+          x_u32.writeUInt32LE(x);
+          const y_u32=Buffer.alloc(4);
+          y_u32.writeUInt32LE(y);
+          const world_u32=Buffer.alloc(4);
+          world_u32.writeUInt32LE(world);
+          
+          const pda_account=self.getPDA([
+            Buffer.from("b_dt"),
+            x_u32,
+            y_u32,
+            world_u32
+          ],PID);
+          const raw=await self.getAccount(pda_account);
+          if(raw===null) return console.log(`"texturecounter" is not created.`)
+          console.log(raw.data.toString());
         },
     },
   }
