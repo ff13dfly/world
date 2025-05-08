@@ -8,10 +8,14 @@ use crate::constants::{
     SOLANA_PDA_LEN,
     ResourceMap,
     TextureData,
+    TextureCounter,
     ComplainData,
     VBW_SEEDS_RESOURE_MAP,
     VBW_SEEDS_TEXTURE_DATA,
     VBW_SEEDS_COMPLAIN_DATA,
+    VBW_SEEDS_TEXTURE_COUNT,
+    ResoureStatus,
+    ErrorCode,
 };
 
 /********************************************************************/
@@ -20,9 +24,9 @@ use crate::constants::{
 
 ///Add new IPFS texture
 pub fn texture_add(
-    _ctx: Context<AddTexture>,      //default from system
-    _ipfs:String,                    //IPFS cid
+    ctx: Context<AddTexture>,      //default from system
     _index:u32,                     //texture id
+    ipfs:String,                    //IPFS cid
 ) -> Result<()> {
 
     //1.check input
@@ -30,30 +34,60 @@ pub fn texture_add(
     //1.2. check wether IPFS file is exsisted    
     //1.3. check wether index valid
 
+    let clock = &ctx.accounts.clock;
+
+    let payer_pubkey = ctx.accounts.payer.key();
+    let owner=payer_pubkey.to_string();
+    let create=clock.slot;
+    let status=ResoureStatus::Created as u32;
+    *ctx.accounts.texture_data=TextureData{
+        ipfs,
+        owner,
+        create,
+        status,
+    };
+
     Ok(())
 }
 
 pub fn texture_approve(
-    _ctx: Context<ApproveTexture>, 
+    ctx: Context<ApproveTexture>, 
     _index:u32,                      //texture index in queue
 ) -> Result<()> {
-    
+
+    let texture= &mut ctx.accounts.texture_data;
+    texture.status=ResoureStatus::Approved as u32;
+
     Ok(())
 }
 
 pub fn texture_complain(
-    _ctx: Context<ComplainTexture>, //default from system
-    _json:String,                     //complain JSON string
+    ctx: Context<ComplainTexture>, //default from system
     _index:u32,                      //texture index in queue
+    complain:String,                     //complain JSON string
 ) -> Result<()> {
     
+    let clock = &ctx.accounts.clock;
+    let category=1;
+    let result=String::from("{}");
+    let create=clock.slot;
+    *ctx.accounts.complain_data= ComplainData{
+        category,
+        complain,
+        result,
+        create,
+    };
+
     Ok(())
 }
 
 pub fn texture_recover(
-    _ctx: Context<RecoverTexture>,      //default from system
+    ctx: Context<RecoverTexture>,      //default from system
     _index:u32,                    //texture index in queue
 ) -> Result<()> {
+
+    let texture= &mut ctx.accounts.texture_data;
+    texture.status=ResoureStatus::Approved as u32;
     
     Ok(())
 }
@@ -73,7 +107,7 @@ pub fn texture_recover(
 /********************************************************************/
 
 #[derive(Accounts)]
-#[instruction(ipfs:String,index:u32)]
+#[instruction(index:u32)]
 pub struct AddTexture<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -93,7 +127,11 @@ pub struct AddTexture<'info> {
     )]
     pub texture_data: Account<'info, TextureData>,
 
+    #[account(mut,seeds = [VBW_SEEDS_TEXTURE_COUNT],bump)]
+    pub texture_counter: Account<'info, TextureCounter>,
+
     pub system_program: Program<'info, System>,
+    pub clock: Sysvar<'info, Clock>,
 }   
 
 #[derive(Accounts)]
@@ -103,18 +141,18 @@ pub struct ApproveTexture<'info> {
     pub payer: Signer<'info>,
 
     #[account(mut,seeds = [VBW_SEEDS_TEXTURE_DATA,&index.to_le_bytes()],bump)]
-    pub module_data: Account<'info, TextureData>,
+    pub texture_data: Account<'info, TextureData>,
 }
 
 
 #[derive(Accounts)]
-#[instruction(json:String,index:u32)]
+#[instruction(index:u32)]
 pub struct ComplainTexture<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
     #[account(mut,seeds = [VBW_SEEDS_TEXTURE_DATA,&index.to_le_bytes()],bump)]
-    pub module_data: Account<'info, TextureData>,
+    pub texture_data: Account<'info, TextureData>,
 
     #[account(
         init,
@@ -129,6 +167,7 @@ pub struct ComplainTexture<'info> {
     pub complain_data: Account<'info, ComplainData>,
 
     pub system_program: Program<'info, System>,
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]
@@ -138,5 +177,5 @@ pub struct RecoverTexture<'info> {
     pub payer: Signer<'info>,
 
     #[account(mut,seeds = [VBW_SEEDS_TEXTURE_DATA,&index.to_le_bytes()],bump)]
-    pub module_data: Account<'info, TextureData>,
+    pub texture_data: Account<'info, TextureData>,
 }

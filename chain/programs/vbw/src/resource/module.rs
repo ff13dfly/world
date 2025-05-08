@@ -9,48 +9,81 @@ use crate::constants::{
     ResourceMap,
     ModuleData,
     ComplainData,
+    ModuleCounter,
     VBW_SEEDS_RESOURE_MAP,
     VBW_SEEDS_MODULE_DATA,
     VBW_SEEDS_COMPLAIN_DATA,
+    VBW_SEEDS_MODULE_COUNT,
+    ResoureStatus,
+    ErrorCode,
 };
 
 /********************************************************************/
 /************************ Public Functions **************************/
 /********************************************************************/
 
-///!important, init the VBW system.
-
 pub fn module_add(
-    _ctx: Context<AddModule>,      //default from system
-    _ipfs:String,                    //IPFS cid
+    ctx: Context<AddModule>,      //default from system
     _index:u32,
+    ipfs:String,                    //IPFS cid
 ) -> Result<()> {
+
+    let clock = &ctx.accounts.clock;
+
+    let payer_pubkey = ctx.accounts.payer.key();
+    let owner=payer_pubkey.to_string();
+    let create=clock.slot;
+    let status=ResoureStatus::Created as u32;
+    *ctx.accounts.module_data=ModuleData{
+        ipfs,
+        owner,
+        create,
+        status,
+    };
 
     Ok(())
 }
 
 
 pub fn module_approve(
-    _ctx: Context<ApproveModule>,      //default from system                   
+    ctx: Context<ApproveModule>,      //default from system                   
     _index:u32,
 ) -> Result<()> {
+
+    let module= &mut ctx.accounts.module_data;
+    module.status=ResoureStatus::Approved as u32;
 
     Ok(())
 }
 
 pub fn module_complain(
-    _ctx: Context<ComplainModule>,      //default from system
-    _json:String,                     //complain JSON string                 
+    ctx: Context<ComplainModule>,      //default from system
     _index:u32,
+    complain:String,                     //complain JSON string        
 ) -> Result<()> {
+
+    let clock = &ctx.accounts.clock;
+    let category=1;
+    let result=String::from("{}");
+    let create=clock.slot;
+    *ctx.accounts.complain_data= ComplainData{
+        category,
+        complain,
+        result,
+        create,
+    };
+
 
     Ok(())
 }
 
 pub fn module_recover(
-    _ctx: Context<RecoverModule>,      //default from system                   
+    ctx: Context<RecoverModule>,      //default from system                   
     _index:u32,
 ) -> Result<()> {
+
+    let module= &mut ctx.accounts.module_data;
+    module.status=ResoureStatus::Approved as u32;
 
     Ok(())
 }
@@ -70,7 +103,7 @@ pub fn module_recover(
 /********************************************************************/
 
 #[derive(Accounts)]
-#[instruction(ipfs:String,index:u32)]
+#[instruction(index:u32)]
 pub struct AddModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -90,7 +123,11 @@ pub struct AddModule<'info> {
     )]
     pub module_data: Account<'info, ModuleData>,
 
+    #[account(mut,seeds = [VBW_SEEDS_MODULE_COUNT],bump)]
+    pub module_counter: Account<'info, ModuleCounter>,
+
     pub system_program: Program<'info, System>,
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]
@@ -105,7 +142,7 @@ pub struct ApproveModule<'info> {
 
 
 #[derive(Accounts)]
-#[instruction(json:String,index:u32)]
+#[instruction(index:u32)]
 pub struct ComplainModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -123,6 +160,7 @@ pub struct ComplainModule<'info> {
     pub complain_data: Account<'info, ComplainData>,
 
     pub system_program: Program<'info, System>,
+    pub clock: Sysvar<'info, Clock>,
 }
 
 #[derive(Accounts)]

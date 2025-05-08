@@ -12,6 +12,8 @@ use crate::constants::{
     VBW_SEEDS_WORLD_COUNT,
     VBW_SEEDS_BLOCK_DATA,
     VBW_SEEDS_COMPLAIN_DATA,
+    BlockStatus,
+    ErrorCode,
 };
 
 
@@ -35,17 +37,6 @@ pub fn mint(
 
     //3. init block
 
-    // pub struct BlockData {
-    //     #[max_len(30)] 
-    //     pub data: String,
-    //     #[max_len(30)] 
-    //     pub owner: String,              //owner of block 
-    //     pub price: u32,                 //selling price
-    //     pub create: u64,                //create slot height
-    //     pub update: u64,                //last update slot height
-    //     pub status: u32,                //block status ["public", "private","selling","banned", "locked"]
-    // }
-
     //let block = &mut ctx.accounts.block_data;
     let clock = &ctx.accounts.clock;
 
@@ -55,7 +46,7 @@ pub fn mint(
     let price:u32=0;
     let create=clock.slot.clone();
     let update=clock.slot;
-    let status:u32=0;
+    let status=BlockStatus::Public as u32;
     *ctx.accounts.block_data= BlockData{
         data,
         owner,
@@ -109,7 +100,7 @@ pub fn sell(
     let bk= &mut ctx.accounts.block_data;
     bk.price=price;
     bk.update=clock.slot;
-    bk.status=2;            //FIXME, here to set an enum to select
+    bk.status=BlockStatus::Selling as u32;            //FIXME, here to set an enum to select
 
     Ok(())
 }
@@ -159,26 +150,43 @@ pub fn revoke(
 }
 
 pub fn complain(
-    _ctx: Context<ComplainBlock>,      //default from system
+    ctx: Context<ComplainBlock>,      //default from system
     _x:u32,                      
     _y:u32,
     _world:u32,
-    _data:String,                     //complain JSON string
+    complain:String,                     //complain JSON string
 ) -> Result<()> {
 
     //1. input check
+    let clock = &ctx.accounts.clock;
+    let category=1;
+    let result=String::from("{}");
+    let create=clock.slot;
+    *ctx.accounts.complain_data= ComplainData{
+        category,
+        complain,
+        result,
+        create,
+    };
+
 
     Ok(())
 }
 
 pub fn recover(
-    _ctx: Context<RecoverBlock>,      //default from system
+    ctx: Context<RecoverBlock>,      //default from system
     _x:u32,                      
     _y:u32,
     _world:u32,
 ) -> Result<()> {
 
     //1. input check
+
+    let clock = &ctx.accounts.clock;
+    let bk= &mut ctx.accounts.block_data;
+    bk.update=clock.slot;
+    bk.status=BlockStatus::Public as u32;;
+    
 
     Ok(())
 }

@@ -71,6 +71,8 @@ pub struct AdjunctMap {
 pub struct WorldData {
     #[max_len(500)]         
     pub data: String,       //JSON world setting
+    #[max_len(3000)]
+    pub adjunct:String,     //adjunct setting
     pub start: u64,         //world start slot height
     pub close: u64,         //all blocks are sold out slot height
 }
@@ -115,7 +117,7 @@ pub struct BlockData {
     pub price: u32,                 //selling price
     pub create: u64,                //create slot height
     pub update: u64,                //last update slot height
-    pub status: u32,                //block status ["public", "private","banned", "locked"]
+    pub status: u32,                //block status enum BlockStatus
 }
 
 /********************************************************************/
@@ -140,9 +142,9 @@ pub struct ResourceMap {
 #[derive(InitSpace)]
 pub struct ModuleData {
     #[max_len(30)] 
-    pub ipfs: String,     //JSON world setting
+    pub ipfs:String,     //JSON world setting
     #[max_len(30)] 
-    pub owner: String,    //creator of gene to accept token
+    pub owner:String,    //creator of gene to accept token
     pub create: u64,      //create slot height
     pub status: u32,      //block status  ["created","approved","banned"]
 }
@@ -253,4 +255,30 @@ pub enum ErrorCode {
 
     #[msg("Invalid world index to start new world.")]
     InvalidWorldIndex,
+}
+
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BlockStatus {
+    Public = 0,
+    Private = 1,
+    Selling = 2,
+    Banned = 3,
+    Locked = 4,
+}
+
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResoureStatus {
+    Created = 0,
+    Approved = 1,
+    Banned = 2,
+}
+
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ComplainCategory {
+    Block = 0,
+    Texture = 1,
+    Module = 2,
 }

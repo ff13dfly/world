@@ -36,13 +36,13 @@ pub mod vbw {
 
     ///insert or update adjunct details
     pub fn adjunct(
-        ctx: Context<UpdateAdjunct>,
+        ctx: Context<WorldAdjunct>,
+        index:u32,
         short:String,
         name:String,
         format:String,
-        version:u32,
     ) -> Result<()> {
-        adjunct::update(ctx,short,name,format,version)
+        world::adjunct(ctx,index,short,name,format)
     }
 
     ///start a new world when it is ready
@@ -141,7 +141,7 @@ pub mod vbw {
         ipfs: String,
         index: u32,
     ) -> Result<()> {
-        texture::texture_add(ctx,ipfs,index)
+        texture::texture_add(ctx,index,ipfs)
     }
 
     ///complain when texture content is illeagale
@@ -150,7 +150,7 @@ pub mod vbw {
         data: String,
         index: u32,
     ) -> Result<()> {
-        texture::texture_complain(ctx,data,index)
+        texture::texture_complain(ctx,index,data)
     }
 
     ///approve to allow texture for VBW, manage operation
@@ -187,7 +187,7 @@ pub mod vbw {
         ipfs: String,
         index: u32,
     ) -> Result<()> {
-        module::module_add(ctx,ipfs,index)
+        module::module_add(ctx,index,ipfs)
     }
 
     ///complain when texture content is illeagale
@@ -196,7 +196,7 @@ pub mod vbw {
         data:String,
         index: u32,
     ) -> Result<()> {
-        module::module_complain(ctx,data,index)
+        module::module_complain(ctx,index,data)
     }
 
     ///approve to allow module for VBW, manage operation

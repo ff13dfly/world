@@ -101,13 +101,25 @@ pub fn start(
     let clock = &ctx.accounts.clock;
     let start:u64=clock.slot;
     let close:u64=0;
+    let adjunct=String::from("{}");
     let n_world=WorldData{
         data,
+        adjunct,
         start,
         close
     };
     world_list.add(n_world);
 
+    Ok(())
+}
+
+pub fn adjunct(
+    _ctx: Context<WorldAdjunct>,    //default from system
+    _index: u32,                    //index of world to  start
+    _short: String,
+    _name: String,
+    _format: String,
+) -> Result<()> {
     Ok(())
 }
 
@@ -210,4 +222,12 @@ pub struct NewWorld<'info> {
 
     pub system_program: Program<'info, System>,
     pub clock: Sysvar<'info, Clock>,
+}
+
+#[derive(Accounts)]
+#[instruction(index:u32)]
+pub struct WorldAdjunct<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
 }
