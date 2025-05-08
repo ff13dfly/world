@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-
+use serde_json::{json, Value};
 
 /********************************************************************/
 /*********************** Static Parameters **************************/
@@ -26,11 +26,10 @@ pub const VBW_BLOCK_INIT_PRICE:u64= 1_000_000;      // 0.01 SOL, the block init 
 ///PDA accounts seeds
 pub const VBW_SEEDS_WHITE_LIST:&[u8;5]=b"white";
 pub const VBW_SEEDS_WORLD_LIST:&[u8;6]=b"worlds";
-pub const VBW_SEEDS_ADJUNCT_LIST:&[u8;7]=b"adjunct";
 pub const VBW_SEEDS_BLOCK_DATA:&[u8;4]=b"b_dt";
 pub const VBW_SEEDS_WORLD_COUNT:&[u8;4]=b"w_ct";
-pub const VBW_SEEDS_TEXTURE_COUNT:&[u8;9]=b"c_texture";
-pub const VBW_SEEDS_MODULE_COUNT:&[u8;8]=b"c_module";
+pub const VBW_SEEDS_TEXTURE_COUNT:&[u8;4]=b"c_tx";
+pub const VBW_SEEDS_MODULE_COUNT:&[u8;4]=b"c_md";
 pub const VBW_SEEDS_TEXTURE_DATA:&[u8;4]=b"d_tx";
 pub const VBW_SEEDS_MODULE_DATA:&[u8;4]=b"d_md";
 pub const VBW_SEEDS_COMPLAIN_DATA:&[u8;4]=b"d_cp";
@@ -57,13 +56,52 @@ impl WorldList {
 
     //when all blocks are sold out, close the world
     pub fn close(&mut self) {
-
+        
     }
-}
 
-#[account]
-pub struct AdjunctMap {
+    pub fn adjunct(&mut self, index:u32, short:String, name:String, format:String) {
 
+        //1.get adjunct data;
+        let world_data = &mut self.list[index as usize];
+        if world_data.adjunct.is_empty(){
+            return ();
+        }
+        let mut adjunct_data: Value = match serde_json::from_str(&world_data.adjunct) {
+            Ok(json) => json,
+            Err(_) => return (),
+        };
+
+        //2.check wether name or short exsist
+        // for s in adjunct_data {
+        //     if let Some(s_arr) = s.as_array() {
+        //         if s_arr.len() != 2 
+        //             || !s_arr[0].is_string() 
+        //             || !s_arr[1].is_string() {
+        //             return false;
+        //         }
+        //     } else {
+        //         return false;
+        //     }
+        // }
+
+
+        //3.format data to save
+        let arr_format:Value= match serde_json::from_str(&format) {
+            Ok(json) => json,
+            Err(_) => return (),
+        };
+        let new_entry = json!([short, name, arr_format]);
+        if let Some(arr) = adjunct_data.as_array_mut() {
+            arr.push(new_entry);
+        }
+
+        let adjunct_final = match serde_json::to_string(&adjunct_data) {
+            Ok(result) => result,
+            Err(_) => return  (),
+        };
+
+        world_data.adjunct=adjunct_final
+    }
 }
 
 #[account]
@@ -110,11 +148,11 @@ impl WorldCounter {
 #[account]
 #[derive(InitSpace)]
 pub struct BlockData {
-    #[max_len(30)] 
+    #[max_len(50)] 
     pub data: String,
-    #[max_len(30)] 
+    #[max_len(50)] 
     pub owner: String,              //owner of block 
-    pub price: u32,                 //selling price
+    pub price: u64,                 //selling price
     pub create: u64,                //create slot height
     pub update: u64,                //last update slot height
     pub status: u32,                //block status enum BlockStatus
@@ -131,21 +169,15 @@ pub struct ResourceFootprint {
     stamp:u64,          //slot height
 }
 
-//resource map to check IPFS file
-#[account]
-pub struct ResourceMap {
-
-}
-
 //single module data struct
 #[account]
 #[derive(InitSpace)]
 pub struct ModuleData {
-    #[max_len(30)] 
+    #[max_len(80)]
     pub ipfs:String,     //JSON world setting
-    #[max_len(30)] 
+    #[max_len(50)] 
     pub owner:String,    //creator of gene to accept token
-    pub create: u64,      //create slot height
+    pub create: u64,     //create slot height
     pub status: u32,      //block status  ["created","approved","banned"]
 }
 
@@ -176,9 +208,9 @@ impl ModuleCounter {
 #[account]
 #[derive(InitSpace)]
 pub struct TextureData {
-    #[max_len(30)] 
+    #[max_len(80)] 
     pub ipfs: String,     //JSON world setting
-    #[max_len(30)] 
+    #[max_len(50)] 
     pub owner: String,    //creator of gene to accept token
     pub create: u64,      //create slot height
     pub status: u32,      //block status  ["created","approved","banned"]
@@ -241,20 +273,11 @@ impl WhiteList {
 #[derive(InitSpace)]
 pub struct ComplainData {
     pub category: u32,          //["block","texture","module"]
-    #[max_len(30)]
-    pub complain: String,   //creator of gene to accept token
-    #[max_len(30)]
-    pub result:String,      //response result data
+    #[max_len(200)]
+    pub complain: String,   
+    #[max_len(200)]
+    pub result:String, 
     pub create: u64,        //create slot height
-}
-
-#[error_code]
-pub enum ErrorCode {
-    #[msg("System is inited already.")]
-    AlreadyInited,
-
-    #[msg("Invalid world index to start new world.")]
-    InvalidWorldIndex,
 }
 
 #[repr(u32)]
@@ -281,4 +304,28 @@ pub enum ComplainCategory {
     Block = 0,
     Texture = 1,
     Module = 2,
+}
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("System is inited already.")]
+    AlreadyInited,
+
+    #[msg("Invalid index to start new world.")]
+    InvalidWorldIndex,
+
+    #[msg("Invalid JSON format.")]
+    InvalidJSON,
+
+    #[msg("Failed to stringify JSON.")]
+    FailedToString,
+
+    #[msg("Block is minted, please try another one.")]
+    BlockIsMinted,
+
+    #[msg("Invalid block location.")]
+    InvalidLocation,
+
+    #[msg("Not the owner of this block.")]
+    NotOwnerOfBlock,
 }

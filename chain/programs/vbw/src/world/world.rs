@@ -2,6 +2,8 @@ use {
     //std::str::FromStr,
     anchor_lang::prelude::*,
     //anchor_lang::system_program,
+    serde_json::{json, Value},
+
 };
 
 use crate::constants::{
@@ -12,12 +14,10 @@ use crate::constants::{
     WorldList,
     WhiteList,
     WorldData,
-    ResourceMap,
     WorldCounter,
     ModuleCounter,
     TextureCounter,
     VBW_SEEDS_WORLD_LIST,
-    VBW_SEEDS_RESOURE_MAP,
     VBW_SEEDS_WHITE_LIST,
     VBW_SEEDS_WORLD_COUNT,
     VBW_SEEDS_MODULE_COUNT,
@@ -38,8 +38,8 @@ pub fn init(
 
     //1. create world necessary accounts.
     //1.1. world list 
-    //1.2. texture queue
-    //1.3. module queue
+    //1.2. texture counter
+    //1.3. module counter
     //1.4. adjunct map
 
     //2. create management accounts.
@@ -60,13 +60,7 @@ pub fn init(
     };
 
     //2.2. whitelist of manage for single world. ( ban block )
-
     // let whitelist = &mut ctx.accounts.white_account;
-
-    // let value:u64=0;
-    // *ctx.accounts.world_counter= LuckCounter{
-    //     value
-    // };
 
     Ok(())
 }
@@ -79,6 +73,11 @@ pub fn start(
 
     //0. input check
     //0.1. wether valid index.
+    let world_list=&mut ctx.accounts.world_list;
+    if world_list.list.len() != index as usize {
+        return Err(error!(ErrorCode::InvalidWorldIndex));
+    }
+    
     //0.2. wether valid setting.
 
     //1. logical check
@@ -94,14 +93,11 @@ pub fn start(
     //3.1. update new world setting
     //3.2. close the update of old world
 
-    let world_list=&mut ctx.accounts.world_list;
-    if world_list.list.len() != index as usize {
-        return Err(error!(ErrorCode::InvalidWorldIndex));
-    }
+    
     let clock = &ctx.accounts.clock;
     let start:u64=clock.slot;
     let close:u64=0;
-    let adjunct=String::from("{}");
+    let adjunct=String::from("[]");
     let n_world=WorldData{
         data,
         adjunct,
@@ -114,12 +110,20 @@ pub fn start(
 }
 
 pub fn adjunct(
-    _ctx: Context<WorldAdjunct>,    //default from system
-    _index: u32,                    //index of world to  start
-    _short: String,
-    _name: String,
-    _format: String,
+    ctx: Context<WorldAdjunct>,    //default from system
+    index: u32,                    //index of world to  start
+    short: String,
+    name: String,
+    format: String,
 ) -> Result<()> {
+    //0. input check
+    //0.1. index check
+    //0.2. short limit
+    //0.3. name limit 
+
+    let world_list=&mut ctx.accounts.world_list;
+    world_list.adjunct(index,short,name,format);
+    
     Ok(())
 }
 
@@ -162,16 +166,7 @@ pub struct InitVBW<'info> {
         seeds = [VBW_SEEDS_WORLD_LIST],
         bump,
     )]
-    pub world_list: Account<'info, WorldList>, 
-
-    // #[account(
-    //     init,
-    //     space = SOLANA_PDA_LEN + VBW_RESOURE_MAP_SIZE,     
-    //     payer = payer,
-    //     seeds = [VBW_SEEDS_RESOURE_MAP],
-    //     bump,
-    // )]
-    // pub world_counter: Account<'info, ResourceMap>,
+    pub world_list: Account<'info, WorldList>,
 
     #[account(
         init,
@@ -230,4 +225,9 @@ pub struct WorldAdjunct<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
+    #[account(mut,seeds = [VBW_SEEDS_WORLD_LIST],bump)]
+    pub world_list: Account<'info, WorldList>,
+
+    #[account(mut,seeds = [VBW_SEEDS_WHITE_LIST],bump)]
+    pub whitelist_account: Account<'info, WhiteList>,
 }

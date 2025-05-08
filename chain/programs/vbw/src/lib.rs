@@ -35,7 +35,7 @@ pub mod vbw {
 
 
     ///insert or update adjunct details
-    pub fn adjunct(
+    pub fn adjunct_world(
         ctx: Context<WorldAdjunct>,
         index:u32,
         short:String,
@@ -71,12 +71,12 @@ pub mod vbw {
     ///Update the data account address
     pub fn update_block(
         ctx: Context<UpdateBlock>,
-        account:String,                    //Data account address
+        data:String,          //JSON format data
         x: u32,
         y: u32,
         world: u32
     ) -> Result<()> {
-        block::update(ctx,x,y,world,account)
+        block::update(ctx,x,y,world,data)
     }
 
     ///set price to sell block
@@ -85,7 +85,7 @@ pub mod vbw {
         x: u32,
         y: u32,
         world: u32,
-        price: u32,
+        price: u64,
     ) -> Result<()> {
         block::sell(ctx,x,y,world,price)
     }
@@ -98,6 +98,16 @@ pub mod vbw {
         world: u32,
     ) -> Result<()> {
         block::buy(ctx,x,y,world)
+    }
+
+    ///buy the on-sell block
+    pub fn revoke_block(
+        ctx: Context<RevokeBlock>,
+        x: u32,
+        y: u32,
+        world: u32,
+    ) -> Result<()> {
+        block::revoke(ctx,x,y,world)
     }
 
     ///complain when block content is illeagale
@@ -136,38 +146,38 @@ pub mod vbw {
     /************************************************************************************************/
 
     ///add new IPFS texture, need to approve
-    pub fn add_texture(
-        ctx: Context<AddTexture>,
+    pub fn insert_texture(
+        ctx: Context<InsertTexture>,
         ipfs: String,
         index: u32,
     ) -> Result<()> {
-        texture::texture_add(ctx,index,ipfs)
+        texture::texture_insert(ctx,index,ipfs)
     }
 
     ///complain when texture content is illeagale
-    pub fn complain_texture(
-        ctx: Context<ComplainTexture>,
-        data: String,
-        index: u32,
-    ) -> Result<()> {
-        texture::texture_complain(ctx,index,data)
-    }
+    // pub fn complain_texture(
+    //     ctx: Context<ComplainTexture>,
+    //     data: String,
+    //     index: u32,
+    // ) -> Result<()> {
+    //     texture::texture_complain(ctx,index,data)
+    // }
 
     ///approve to allow texture for VBW, manage operation
-    pub fn approve_texture(
-        ctx: Context<ApproveTexture>,
-        index: u32,
-    ) -> Result<()> {
-        texture::texture_approve(ctx,index)
-    }  
+    // pub fn approve_texture(
+    //     ctx: Context<ApproveTexture>,
+    //     index: u32,
+    // ) -> Result<()> {
+    //     texture::texture_approve(ctx,index)
+    // }  
 
     ///recover the banned texture, manage operation
-    pub fn recover_texture(
-        ctx: Context<RecoverTexture>,
-        index: u32,
-    ) -> Result<()> {
-        texture::texture_recover(ctx,index)
-    }
+    // pub fn recover_texture(
+    //     ctx: Context<RecoverTexture>,
+    //     index: u32,
+    // ) -> Result<()> {
+    //     texture::texture_recover(ctx,index)
+    // }
 
     ///ban the target texture, manage operation
     pub fn ban_texture(

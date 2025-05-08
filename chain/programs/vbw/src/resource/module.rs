@@ -6,11 +6,9 @@ use {
 
 use crate::constants::{
     SOLANA_PDA_LEN,
-    ResourceMap,
     ModuleData,
     ComplainData,
     ModuleCounter,
-    VBW_SEEDS_RESOURE_MAP,
     VBW_SEEDS_MODULE_DATA,
     VBW_SEEDS_COMPLAIN_DATA,
     VBW_SEEDS_MODULE_COUNT,
@@ -29,7 +27,6 @@ pub fn module_add(
 ) -> Result<()> {
 
     let clock = &ctx.accounts.clock;
-
     let payer_pubkey = ctx.accounts.payer.key();
     let owner=payer_pubkey.to_string();
     let create=clock.slot;
@@ -72,8 +69,7 @@ pub fn module_complain(
         result,
         create,
     };
-
-
+    
     Ok(())
 }
 
@@ -103,21 +99,21 @@ pub fn module_recover(
 /********************************************************************/
 
 #[derive(Accounts)]
-#[instruction(index:u32)]
+#[instruction(id:u32)]
 pub struct AddModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut,seeds = [VBW_SEEDS_RESOURE_MAP],bump)]
-    pub resource_map: Account<'info, ResourceMap>,
+    // #[account(mut,seeds = [VBW_SEEDS_RESOURE_MAP],bump)]
+    // pub resource_map: Account<'info, ResourceMap>,
 
     #[account(
-        init,
+        init_if_needed,
         space = SOLANA_PDA_LEN + ModuleData::INIT_SPACE,     
         payer = payer,
         seeds = [
             VBW_SEEDS_MODULE_DATA,
-            &index.to_le_bytes(),
+            &id.to_le_bytes(),
         ],
         bump,
     )]
@@ -131,29 +127,29 @@ pub struct AddModule<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(index:u32)]
+#[instruction(id:u32)]
 pub struct ApproveModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut,seeds = [VBW_SEEDS_MODULE_DATA,&index.to_le_bytes()],bump)]
+    #[account(mut,seeds = [VBW_SEEDS_MODULE_DATA,&id.to_le_bytes()],bump)]
     pub module_data: Account<'info, ModuleData>,
 }
 
 
 #[derive(Accounts)]
-#[instruction(index:u32)]
+#[instruction(id:u32)]
 pub struct ComplainModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
     #[account(
-        init,
+        init_if_needed,
         space = SOLANA_PDA_LEN + ComplainData::INIT_SPACE,     
         payer = payer,
         seeds = [
             VBW_SEEDS_MODULE_DATA,      //need to set [u8;4] to avoid error
-            &index.to_le_bytes(),
+            &id.to_le_bytes(),
         ],
         bump,
     )]

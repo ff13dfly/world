@@ -188,6 +188,18 @@ const self={
           if(raw===null) return console.log(`"texturecounter" is not created.`)
           console.log(raw.data.toString());
         },
+        moduledata:async (index)=>{
+          const n_index=Buffer.alloc(4);
+          n_index.writeUInt32LE(index);
+          
+          const pda_counter=self.getPDA([
+            Buffer.from("d_md"),
+            n_index,
+          ],PID);
+          const raw=await self.getAccount(pda_counter);
+          if(raw===null) return console.log(`"moduledata" is not created.`)
+          console.log(raw.data.toString());
+        },
     },
   }
   
