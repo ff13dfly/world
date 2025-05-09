@@ -150,11 +150,11 @@ describe("VBW block functions test.",async () => {
     await reqs.mint(x,y,world);
   });
 
-  it("Complain block for banning.", async () => {
-    const x=2025,y=502,world=0;
-    const ctxt=JSON.stringify({type:"ban",msg:"Illegle content"});
-    await reqs.complain(ctxt,x,y,world);
-  });
+  // it("Complain block for banning.", async () => {
+  //   const x=2025,y=502,world=0;
+  //   const ctxt=JSON.stringify({type:"ban",msg:"Illegle content"});
+  //   await reqs.complain(ctxt,x,y,world);
+  // });
 
   // it("Update block detail.", async () => {
   //   const x=2025,y=386,world=0;

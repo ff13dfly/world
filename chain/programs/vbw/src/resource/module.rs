@@ -3,6 +3,7 @@ use {
     anchor_lang::prelude::*,
     //anchor_lang::system_program,
 };
+use md5;
 
 use crate::constants::{
     SOLANA_PDA_LEN,
@@ -22,8 +23,8 @@ use crate::constants::{
 
 pub fn module_add(
     ctx: Context<AddModule>,      //default from system
-    _index:u32,
-    ipfs:String,                    //IPFS cid
+    index:u32,
+    ipfs:String,                    //IPFS cid          
 ) -> Result<()> {
 
     let clock = &ctx.accounts.clock;
@@ -37,7 +38,6 @@ pub fn module_add(
         create,
         status,
     };
-
     Ok(())
 }
 
@@ -108,12 +108,12 @@ pub struct AddModule<'info> {
     // pub resource_map: Account<'info, ResourceMap>,
 
     #[account(
-        init_if_needed,
+        init,
         space = SOLANA_PDA_LEN + ModuleData::INIT_SPACE,     
         payer = payer,
         seeds = [
             VBW_SEEDS_MODULE_DATA,
-            //&index.to_le_bytes(),
+            &index.to_le_bytes()
         ],
         bump,
     )]

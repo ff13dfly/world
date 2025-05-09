@@ -1,5 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Vbw } from "../target/types/vbw";
+import { PublicKey,SystemProgram,SYSVAR_CLOCK_PUBKEY } from "@solana/web3.js";
 import self from "./preset";
 
 const program = anchor.workspace.Vbw as anchor.Program<Vbw>;
@@ -11,6 +12,17 @@ const reqs={
   add:async (ipfs,index)=>{
     const users=await self.init({balance:true});
     self.output.start(`Add new module.`);
+
+    const n_index=Buffer.alloc(4);
+    n_index.writeUInt32LE(index);
+    const seeds_data=[
+      Buffer.from("m_yz"),
+      n_index,
+    ];
+    const pda_data=self.getPDA(seeds_data,program.programId,true);
+
+    console.log(pda_data);
+    
     //await self.info.modulecounter();
     const sign_init= await program.methods
       .addModule(ipfs,index)
@@ -84,11 +96,11 @@ const reqs={
 
 describe("VBW module functions test.",() => {
 
-  // it("Add a new module ( IPFS ).", async () => {
-  //   const ipfs="bafkreicl7rl7d6bkgyzxc67jdfoythbthikk7bnt4m22zjd6e7jx5hoerb";
-  //   const index=1;
-  //   await reqs.add(ipfs,index);
-  // });
+  it("Add a new module ( IPFS ).", async () => {
+    const ipfs="bafkreicl7rl7d6bkgyzxc67jdfoythbthikk7bnt4m22zjd6e7jx5hoerb";
+    const index=0;
+    await reqs.add(ipfs,index);
+  });
 
   // it("Approve new module ( IPFS ).", async () => {
   //   const index=1;

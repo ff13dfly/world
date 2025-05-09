@@ -1,6 +1,5 @@
 import { Keypair,PublicKey,SystemProgram,LAMPORTS_PER_SOL,Transaction } from "@solana/web3.js";
 import { getAccount,getAssociatedTokenAddressSync } from '@solana/spl-token';
-import md5 from "md5";
 
 let provider = null;
 let PID = null;
@@ -95,9 +94,11 @@ const self={
         const seed = new TextEncoder().encode(str).slice(0, 32);
         return Keypair.fromSeed(seed);
       },
-    getPDA:(seeds:Buffer[],programId)=>{
+    getPDA:(seeds:Buffer[],programId, isBump=false)=>{
       //const arr=[Buffer.from('lememe_mapping')];
-      const [PDA_account] = PublicKey.findProgramAddressSync(seeds,programId);
+      const [PDA_account,_bump] = PublicKey.findProgramAddressSync(seeds,programId);
+      //console.log(_bump);
+      if(!!isBump) return [_bump,PDA_account];
       return PDA_account;
     },
     
