@@ -14,7 +14,7 @@ use crate::constants::{
     VBW_SEEDS_WORLD_LIST,
     VBW_SEEDS_WORLD_COUNT,
     VBW_SEEDS_BLOCK_DATA,
-    VBW_SEEDS_COMPLAIN_DATA,
+    VBW_SEEDS_COMPLAIN_BLOCK,
     BlockStatus,
     ErrorCode,
 };
@@ -216,7 +216,6 @@ pub fn recover(
     Ok(())
 }
 
-
 /********************************************************************/
 /*********************** Private Functions **************************/
 /********************************************************************/
@@ -259,7 +258,6 @@ fn is_valid_location(x:u32, y:u32, single:&WorldData) -> bool{
 /********************************************************************/
 /************************* Data Structure ***************************/
 /********************************************************************/
-
 
 #[derive(Accounts)]
 #[instruction(x:u32,y:u32,world:u32)]
@@ -390,7 +388,7 @@ pub struct ComplainBlock<'info> {
         space = SOLANA_PDA_LEN + ComplainData::INIT_SPACE,     
         payer = payer,
         seeds = [
-            VBW_SEEDS_COMPLAIN_DATA,    //need to set [u8;4] to avoid error
+            VBW_SEEDS_COMPLAIN_BLOCK,    //need to set [u8;4] to avoid error
             &x.to_le_bytes(),
             &y.to_le_bytes(),
             &world.to_le_bytes(),

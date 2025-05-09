@@ -146,38 +146,47 @@ pub mod vbw {
     /************************************************************************************************/
 
     ///add new IPFS texture, need to approve
-    pub fn insert_texture(
-        ctx: Context<InsertTexture>,
+    // pub fn add_texture(
+    //     ctx: Context<AddTexture>,
+    //     ipfs: String,
+    //     index: u32,
+    // ) -> Result<()> {
+    //     texture::texture_add(ctx,index,ipfs)
+    // }
+
+    pub fn new_texture(
+        ctx: Context<NewTexture>,
         ipfs: String,
         index: u32,
-    ) -> Result<()> {
-        texture::texture_insert(ctx,index,ipfs)
+    )-> Result<()> {
+        texture::texture_new(ctx,index,ipfs)
     }
 
+
     ///complain when texture content is illeagale
-    // pub fn complain_texture(
-    //     ctx: Context<ComplainTexture>,
-    //     data: String,
-    //     index: u32,
-    // ) -> Result<()> {
-    //     texture::texture_complain(ctx,index,data)
-    // }
+    pub fn complain_texture(
+        ctx: Context<ComplainTexture>,
+        data: String,
+        index: u32,
+    ) -> Result<()> {
+        texture::texture_complain(ctx,index,data)
+    }
 
     ///approve to allow texture for VBW, manage operation
-    // pub fn approve_texture(
-    //     ctx: Context<ApproveTexture>,
-    //     index: u32,
-    // ) -> Result<()> {
-    //     texture::texture_approve(ctx,index)
-    // }  
+    pub fn approve_texture(
+        ctx: Context<ApproveTexture>,
+        index: u32,
+    ) -> Result<()> {
+        texture::texture_approve(ctx,index)
+    }  
 
     ///recover the banned texture, manage operation
-    // pub fn recover_texture(
-    //     ctx: Context<RecoverTexture>,
-    //     index: u32,
-    // ) -> Result<()> {
-    //     texture::texture_recover(ctx,index)
-    // }
+    pub fn recover_texture(
+        ctx: Context<RecoverTexture>,
+        index: u32,
+    ) -> Result<()> {
+        texture::texture_recover(ctx,index)
+    }
 
     ///ban the target texture, manage operation
     pub fn ban_texture(

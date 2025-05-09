@@ -30,9 +30,11 @@ pub const VBW_SEEDS_BLOCK_DATA:&[u8;4]=b"b_dt";
 pub const VBW_SEEDS_WORLD_COUNT:&[u8;4]=b"w_ct";
 pub const VBW_SEEDS_TEXTURE_COUNT:&[u8;4]=b"c_tx";
 pub const VBW_SEEDS_MODULE_COUNT:&[u8;4]=b"c_md";
-pub const VBW_SEEDS_TEXTURE_DATA:&[u8;4]=b"d_tx";
+pub const VBW_SEEDS_TEXTURE_DATA:&[u8;4]=b"d_xx";
 pub const VBW_SEEDS_MODULE_DATA:&[u8;4]=b"d_md";
-pub const VBW_SEEDS_COMPLAIN_DATA:&[u8;4]=b"d_cp";
+pub const VBW_SEEDS_COMPLAIN_TEXTURE:&[u8;4]=b"cptx";
+pub const VBW_SEEDS_COMPLAIN_MODULE:&[u8;4]=b"cpmd";
+pub const VBW_SEEDS_COMPLAIN_BLOCK:&[u8;4]=b"cpbk";
 
 pub const VBW_SEEDS_TEXTURE_LIST:&[u8;7]=b"texture";
 pub const VBW_SEEDS_MODULE_LIST:&[u8;6]=b"module";
@@ -48,7 +50,6 @@ pub struct WorldList {
     pub list:Vec<WorldData>,
 }
 impl WorldList {
-
     //add new world to world list
     pub fn add(&mut self, data:WorldData) {
         self.list.push(data)
@@ -148,7 +149,7 @@ impl WorldCounter {
 #[account]
 #[derive(InitSpace)]
 pub struct BlockData {
-    #[max_len(50)] 
+    #[max_len(80)] 
     pub data: String,
     #[max_len(50)] 
     pub owner: String,              //owner of block 

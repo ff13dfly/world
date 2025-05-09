@@ -123,6 +123,24 @@ const reqs={
       await self.info.blockdata(x,y,world);
       self.output.end(`Signature of "recoverBlock": ${sign_init}`);
   },
+  complain:async(ctxt,x,y,world)=>{
+    const users=await self.init({balance:true});
+    self.output.start(`Recover block.`);
+    const sign_init= await program.methods
+      .complainBlock(ctxt,x,y,world)
+      .accounts({
+        payer:users.creator.pair.publicKey,
+      })
+      .signers([users.creator.pair])
+      .rpc()
+      .catch((err)=>{
+        self.output.hr("Got Error");
+        console.log(err);
+      });
+
+      await self.info.blockdata(x,y,world);
+      self.output.end(`Signature of "complainBlock": ${sign_init}`);
+  },
 }
 
 
@@ -130,6 +148,12 @@ describe("VBW block functions test.",async () => {
   it("Mint block out.", async () => {
     const x=2025,y=502,world=0;
     await reqs.mint(x,y,world);
+  });
+
+  it("Complain block for banning.", async () => {
+    const x=2025,y=502,world=0;
+    const ctxt=JSON.stringify({type:"ban",msg:"Illegle content"});
+    await reqs.complain(ctxt,x,y,world);
   });
 
   // it("Update block detail.", async () => {

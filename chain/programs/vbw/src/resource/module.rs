@@ -10,7 +10,7 @@ use crate::constants::{
     ComplainData,
     ModuleCounter,
     VBW_SEEDS_MODULE_DATA,
-    VBW_SEEDS_COMPLAIN_DATA,
+    VBW_SEEDS_COMPLAIN_MODULE,
     VBW_SEEDS_MODULE_COUNT,
     ResoureStatus,
     ErrorCode,
@@ -59,16 +59,16 @@ pub fn module_complain(
     complain:String,                     //complain JSON string        
 ) -> Result<()> {
 
-    let clock = &ctx.accounts.clock;
-    let category=1;
-    let result=String::from("{}");
-    let create=clock.slot;
-    *ctx.accounts.complain_data= ComplainData{
-        category,
-        complain,
-        result,
-        create,
-    };
+    // let clock = &ctx.accounts.clock;
+    // let category=1;
+    // let result=String::from("{}");
+    // let create=clock.slot;
+    // *ctx.accounts.complain_data= ComplainData{
+    //     category,
+    //     complain,
+    //     result,
+    //     create,
+    // };
     
     Ok(())
 }
@@ -99,7 +99,7 @@ pub fn module_recover(
 /********************************************************************/
 
 #[derive(Accounts)]
-#[instruction(id:u32)]
+#[instruction(index:u32)]
 pub struct AddModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -113,7 +113,7 @@ pub struct AddModule<'info> {
         payer = payer,
         seeds = [
             VBW_SEEDS_MODULE_DATA,
-            &id.to_le_bytes(),
+            //&index.to_le_bytes(),
         ],
         bump,
     )]
@@ -127,18 +127,21 @@ pub struct AddModule<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(id:u32)]
+#[instruction(index:u32)]
 pub struct ApproveModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut,seeds = [VBW_SEEDS_MODULE_DATA,&id.to_le_bytes()],bump)]
+    #[account(mut,seeds = [
+        VBW_SEEDS_MODULE_DATA,
+        //&index.to_le_bytes()
+    ],bump)]
     pub module_data: Account<'info, ModuleData>,
 }
 
 
 #[derive(Accounts)]
-#[instruction(id:u32)]
+#[instruction(index:u32)]
 pub struct ComplainModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -148,8 +151,8 @@ pub struct ComplainModule<'info> {
         space = SOLANA_PDA_LEN + ComplainData::INIT_SPACE,     
         payer = payer,
         seeds = [
-            VBW_SEEDS_MODULE_DATA,      //need to set [u8;4] to avoid error
-            &id.to_le_bytes(),
+            VBW_SEEDS_COMPLAIN_MODULE,      //need to set [u8;4] to avoid error
+            //&index.to_le_bytes(),
         ],
         bump,
     )]
@@ -165,6 +168,9 @@ pub struct RecoverModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut,seeds = [VBW_SEEDS_MODULE_DATA,&index.to_le_bytes()],bump)]
+    #[account(mut,seeds = [
+        VBW_SEEDS_MODULE_DATA,
+        //&index.to_le_bytes()
+    ],bump)]
     pub module_data: Account<'info, ModuleData>,
 }

@@ -11,7 +11,7 @@ const reqs={
   add:async (ipfs,index)=>{
     const users=await self.init({balance:true});
     self.output.start(`Add new module.`);
-    await self.info.modulecounter();
+    //await self.info.modulecounter();
     const sign_init= await program.methods
       .addModule(ipfs,index)
       .accounts({
@@ -26,13 +26,83 @@ const reqs={
       //await self.info.moduledata(index);
       self.output.end(`Signature of "addModule": ${sign_init}`);
   },
+  approve:async(index)=>{
+    const users=await self.init({balance:true});
+    self.output.start(`Approve new module.`);
+    //await self.info.modulecounter();
+    const sign_init= await program.methods
+      .approveModule(index)
+      .accounts({
+        payer:users.manager.pair.publicKey,
+      })
+      .signers([users.manager.pair])
+      .rpc()
+      .catch((err)=>{
+        self.output.hr("Got Error");
+        console.log(err);
+      });
+      //await self.info.moduledata(index);
+      self.output.end(`Signature of "approveModule": ${sign_init}`);
+  },
+  complain:async (index,ctxt)=>{
+    const users=await self.init({balance:false});
+    self.output.start(`Complain the module.`);
+
+    const sign_init= await program.methods
+      .complainModule(ctxt,index)
+      .accounts({
+        payer:users.manager.pair.publicKey,
+      })
+      .signers([users.manager.pair])
+      .rpc()
+      .catch((err)=>{
+        self.output.hr("Got Error");
+        console.log(err);
+      });
+      //await self.info.moduledata(index);
+      self.output.end(`Signature of "complainModule": ${sign_init}`);
+  },
+  recover:async(index)=>{
+    const users=await self.init({balance:false});
+    self.output.start(`Recover the module from banning.`);
+
+    const sign_init= await program.methods
+      .recoverModule(index)
+      .accounts({
+        payer:users.manager.pair.publicKey,
+      })
+      .signers([users.manager.pair])
+      .rpc()
+      .catch((err)=>{
+        self.output.hr("Got Error");
+        console.log(err);
+      });
+      //await self.info.moduledata(index);
+      self.output.end(`Signature of "recoverModule": ${sign_init}`);
+  },
 }
 
 describe("VBW module functions test.",() => {
 
-  it("Add a new module ( IPFS ).", async () => {
-    // const ipfs="bafkreicl7rl7d6bkgyzxc67jdfoythbthikk7bnt4m22zjd6e7jx5hoerb";
-    // const index=1;
-    // await reqs.add(ipfs,index);
-  });
+  // it("Add a new module ( IPFS ).", async () => {
+  //   const ipfs="bafkreicl7rl7d6bkgyzxc67jdfoythbthikk7bnt4m22zjd6e7jx5hoerb";
+  //   const index=1;
+  //   await reqs.add(ipfs,index);
+  // });
+
+  // it("Approve new module ( IPFS ).", async () => {
+  //   const index=1;
+  //   await reqs.approve(index);
+  // });
+
+  // it("Complain module to ban.", async () => {
+  //   const index=1;
+  //   const ctxt=JSON.stringify({type:"ban",msg:"Illegle content"});
+  //   await reqs.complain(index,ctxt);
+  // });
+
+  // it("Recover module from banning.", async () => {
+  //   const index=1;
+  //   await reqs.recover(index);
+  // });
 });

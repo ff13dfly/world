@@ -75,10 +75,17 @@ const mock={
         };
     },
     texture:(id,ck)=>{
+        const arr=[
+            "texture/vbw.png",
+            "texture/grass.jpg",
+            "texture/avatar.jpg",
+            "texture/qr.png",
+        ]
+
         return {
             index:id,
-            image:"texture/grass.jpg",
-            repeat:[Toolbox.rand(1,10),Toolbox.rand(1,10)]
+            image:arr[Toolbox.rand(0,arr.length-1)],
+            repeat:[1,1]
         }
     },
     module:(id,ck)=>{
