@@ -119,18 +119,31 @@ const self={
         }, {});
     },
 
-    updateLocation:(px,py,moved,rotated)=>{
-        //1.同步player的位置
+    getRemoveList:(from,to)=>{
+        console.log(from,to);
+    },
+
+    getConvert:()=>{
+        return VBW.cache.get(["env","world","accuracy"]);
+    },
+
+    updateLocation:(camera,total,moved,rotated)=>{
+        const px=camera.position.x;
+        const py=camera.position.y;
+
+        //1.set player position
         if(moved){
             const x=Math.floor(px/side[0]+1);
             const y=Math.floor(py/side[1]+1);
             //console.log(`Current ${JSON.stringify([x,y])}, player: ${JSON.stringify(player.location)}`)
 
             //2.处理跨越block的数据获取
-            const [bx,by]=player.location;
+            const [bx,by]=player.location.block;
             if(bx!==x || by!==y){
-                console.log(`Cross block from  ${JSON.stringify(player.location)} to ${JSON.stringify([x,y])}`);
+                console.log(`Cross block from ${JSON.stringify(player.location)} to ${JSON.stringify([x,y])}`);
 
+                const rms=self.getRemoveList(player.location,[x,y]);
+                
                 const tasks=VBW.cache.get(["task",container,world]);
                 tasks.push({adjunct:"block",act:"remove",param:{x:bx,y:by}});
                 //tasks.push({adjunct:"block",act:"remove",param:{x:x+1,y:y}});
@@ -140,51 +153,86 @@ const self={
             }
 
             VBW.update(container,world);
+
+            player.location.block=[x,y];
         }
+
+        //2.check wether stop
+        //TODO, need to check stop station, include nearby blocks
+
+        //3.player sync
+        const cvt=self.getConvert();
+        player.location.position[0]=px%side[0]/cvt;
+        player.location.position[1]=py%side[1]/cvt;
+        player.location.position[2]=player.location.position[2]+total.position[2]/cvt;
+
+        player.location.rotation[0]=player.location.rotation[0]+total.rotation[0];
+        player.location.rotation[1]=player.location.rotation[1]+total.rotation[1];
+        player.location.rotation[2]=player.location.rotation[2]+total.rotation[2];
     },
 
-    //帧检测的方法，在这里进行运动
+
+    //帧同步里的方法，在这里进行运动
     action:()=>{
-        //console.log(JSON.stringify(actions));
         const dis=[config.move.distance,config.move.angle];
         const ak=camera.rotation.y;
         
-        //1.检测键盘操作
+        //1.根据键盘操作获取移动参数
         let moved=false,rotated=false;
+        const total={position:[0,0,0],rotation:[0,0,0]}
         for(let i=0;i<actions.length;i++){
             const act=actions[i];
             if(!todo[act]) continue;
             const diff=todo[act](dis,ak);
-
             
             if(diff.position){
+                //1.1.检查会不会被stop阻挡
+
+                //1.2.对位置进行移动处理
                 moved=true;
+                total.position[0]+=diff.position[0];
+                total.position[1]+=diff.position[1];
+                total.position[2]+=diff.position[2];
+
                 camera.position.set(
-                    camera.position.x+diff.position[0],
-                    camera.position.y+diff.position[1],
-                    camera.position.z+diff.position[2],
+                    camera.position.x+total.position[0],
+                    camera.position.y+total.position[1],
+                    camera.position.z+total.position[2],
                 );
             }
 
             if(diff.rotation){
                 rotated=true;
+                total.rotation[0]+=diff.rotation[0];
+                total.rotation[1]+=diff.rotation[1];
+                total.rotation[2]+=diff.rotation[2];
+
                 camera.rotation.set(
-                    camera.rotation.x+diff.rotation[0],
-                    camera.rotation.y+diff.rotation[1],
-                    camera.rotation.z+diff.rotation[2],
+                    camera.rotation.x+total.rotation[0],
+                    camera.rotation.y+total.rotation[1],
+                    camera.rotation.z+total.rotation[2],
                 );
             }
 
             //TODO,这里对判断是否为数组，如果是的话，连续运动，lock住再动。这样就可以支持jump等操作
+            //2.对连续动作的支持处理 [{position:[0,0,0],rotation:[0,0,0]},...]类型的数据
             if(diff.group){
                 self.lock();
-                //{action:[],final:{position:[x,y,z],rotation:[rx,ry,rz]}};
+                for(let i=0;i<diff.group.length;i++){
+                    const single=diff.group[i];
+
+                    //2.1.处理位置信息，并检测是否被阻挡
+
+                    //2.2.处理旋转信息
+                }
+
+                
             }
         }
 
         //2.检测是否移动出了block位置
         if(!status.lock){
-            self.updateLocation(camera.position.x,camera.position.y,moved,rotated);
+            self.updateLocation(camera,total,moved,rotated);
         }
     },
 }

@@ -15,7 +15,6 @@ const reg={
 }
 
 let player=null;                //player的信息位置
-
 const self={
     getPlayer:()=>{
         if(player!==null) return true;

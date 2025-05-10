@@ -12,7 +12,9 @@
 import * as THREE from "three";
 const Renderer={
     create:(cfg)=>{
-        const rd=new THREE.WebGLRenderer();
+        const rd=new THREE.WebGLRenderer({
+                antialias: true // 开启抗锯齿
+            });
         rd.setSize(cfg.width, cfg.height);
         return rd;
     },

@@ -202,19 +202,19 @@ const self={
 
     updatePlayer:(user,id)=>{
         //1.设置player的位置
-        VBW.cache.set(["env","player","location"],user.block);
+        VBW.cache.set(["env","player","location"],user);
         //VBW.cache.set(["env","player","world"],user.world);
 
         //2.设置相机的位置
         const cam_chain=["active","containers",id,"camera"];
         const cam =  VBW.cache.get(cam_chain);
-        const side= self.getSide();
-        const cvt=self.getConvert();
-        cam.position.set(...[
+        const side = self.getSide();
+        const cvt = self.getConvert();
+        cam.position.set(
             cam.position.x+(user.block[0]-1)*side[0]+user.position[0]*cvt,
             cam.position.y+(user.block[1]-1)*side[1]+user.position[1]*cvt,
             user.position[2]*cvt
-        ]);
+        );
         cam.rotation.set(...user.rotation);
     },
 
@@ -298,7 +298,7 @@ const World={
         //1.获取到player的具体信息
         if(!self.struct(dom_id)) return  UI.show("toast",`Failed to struct html dom for running.`,{type:"error"});
 
-        VBW.player.start((start)=>{
+        VBW.player.start(dom_id,(start)=>{
             UI.show("toast",`Player start at ${JSON.stringify(start.block)} of world[${start.world}].`);
             VBW.api.world(start.world,(wd)=>{
                 UI.show("toast",`Data load from network successful.`);

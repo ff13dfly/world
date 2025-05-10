@@ -51,7 +51,6 @@ const self = {
         const ans = self.cache.get(ani_chain);
         return ans;
     },
-    //帧更新的方法队列
     getLoopQueue: (world, dom_id) => {
         const queue_chain = ["block", dom_id, world, "loop"];
         return self.cache.get(queue_chain);
@@ -438,13 +437,15 @@ const self = {
         return ck && ck(prefetch);
     },
     cleanBlocks: (arr, world, dom_id) => {
+        const chain_std=["block",dom_id,world];
+        const bks=self.cache.get(chain_std);
         for (let i = 0; i < arr.length; i++) {
             const row = arr[i];
             const key = `${row[0]}_${row[1]}`;
-
-            //const chain_std=["block",id,world,key,"std"];
-            //self.cache.remove(chain_std);
+            console.log(`Clean block: ${key}`);
+            delete bks[key];
         }
+        return true;
     },
 
     backupBlock:(x,y,world,dom_id)=>{
@@ -566,15 +567,13 @@ const Framework = {
 
     //main entry for update, any change then call this function
     update: (dom_id, world) => {
-        //1.更新player的信息，保存player的信息到本地
-        if (Framework.player && Framework.player.autosave) Framework.player.autosave()
 
-        //2.处理todo的内容
+        //1.处理todo的内容
         const tasks = self.cache.get(["task", dom_id, world]);
         if (!tasks.error && tasks.length !== 0) {
             console.log(`Todo list:`, tasks);
             self.excute(tasks, dom_id, world, (done) => {
-
+                
                 //self.structEntire();
             });
         }
@@ -607,7 +606,7 @@ const Framework = {
             Framework[name].hooks.animate(map[key]);      //给定threeObject的列表，处理动画效果
         }
 
-        //4.帧通不过的队列执行
+        //4.帧同步的队列执行
         const list = self.getLoopQueue(world, dom_id);
         if (!list.error) {
             for (let i = 0; i < list.length; i++) {

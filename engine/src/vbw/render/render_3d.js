@@ -208,7 +208,7 @@ const self={
     loadBasic:(scene,dom_id)=>{
         const sun=ThreeObject.get("light","sun",{colorSky:0xfffff,colorGround:0xeeeee,intensity:1});
         const player=VBW.cache.get(["env","player"]);
-        const [x,y]=player.location;
+        const [x,y]=player.location.block;
         const side=self.getSide();
         const cvt=self.getConvert();
         sun.position.set(
@@ -287,7 +287,7 @@ const self={
 
         //1.根据block的数据，分离出texture和module，分别进行加载
         const ext=cfg.extend;
-        const [x,y]=player.location;
+        const [x,y]=player.location.block;
         const world=active.world;
 
         let mds=[],txs=[],objs=[],ans=[];

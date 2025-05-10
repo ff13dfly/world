@@ -9,6 +9,7 @@
 */
 
 import Toolbox from "../lib/toolbox";
+import VBW  from "./framework";
 
 const reg={
     name:"player",       //组件名称
@@ -18,10 +19,11 @@ const reg={
 //配置数据，初始化可以放在这里
 const config={
     location:{
-        block:[1987,519],
+        block:[2025,501],
         world:0,
-        position:[8,8,0],
+        position:[8,8,1.7],
         rotation:[Math.PI*0.5,0,0],
+        headAx:"y",
     },
     body:{
         height:1.5,		//默认的人物高度
@@ -42,23 +44,13 @@ const config={
     autosave:60,            //多少帧进行自动位置保存
 }
 
-//模拟数据，测试用的
-const mock={
-    start:{
-        block:[2025,501],
-        world:0,
-        position:[8,4,1,7],
-        rotation:[Math.PI*0.5,0,0],
-        headAx:"y",
-    },
-}
-
 const self={
     hooks:{
         reg:()=>{
             return reg;
         },
         init:()=>{
+            
             const py=Toolbox.clone(config);
             py.avatar="";
             py.address="";
@@ -69,9 +61,26 @@ const self={
             };
         },
     },
+    getPlayerLocation:()=>{
+        const key="vbw_player";
+        const pp=localStorage.getItem(key);
+        if(pp===null){
+            localStorage.setItem(key,JSON.stringify(config.location));
+            return Toolbox.clone(config.location);
+        }else{
+            try {
+                const data=JSON.parse(pp);
+                return data;
+            } catch (error) {
+                localStorage.setItem(key,JSON.stringify(config.location));
+                return Toolbox.clone(config.location);
+            }
+        }
+    },
 }
 
 let count=0;
+let player=null;
 const vbw_player={
     hooks:self.hooks,
 
@@ -82,7 +91,14 @@ const vbw_player={
 
     autosave:()=>{
         if(count>config.autosave){
-            console.log(`Player status saved.`);
+            if(player===null){
+                player=VBW.cache.get(["env","player","location"]);
+            }
+            //console.log(`Player status saved.`);
+            //const active=VBW.cache.get(["active"]);
+            const key="vbw_player";
+            console.log(JSON.stringify(player));
+            localStorage.setItem(key,JSON.stringify(player));
             count=0;
         }else{
             count++;
@@ -90,14 +106,18 @@ const vbw_player={
     },
 
     //get the player status.
-    start:(ck)=>{
-        const player=Toolbox.clone(mock.start);
+    start:(dom_id,ck)=>{
         //1.获取本地的启动信息
+        const data=self.getPlayerLocation();
 
-        //2.从网络端获取player的信息
-        //const chain=[];
+        //2.设置帧同步操作
+        //2.1.设置好方法
+        const chain=["block",dom_id,data.world,"loop"];
+        if(!VBW.cache.exsist(chain)) VBW.cache.set(chain,[]);
+        const queue=VBW.cache.get(chain);
+        queue.push({name:"player",fun:vbw_player.autosave});
 
-        return ck && ck(player);
+        return ck && ck(data);
     },
 }
 
