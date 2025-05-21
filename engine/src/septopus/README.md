@@ -4,7 +4,7 @@
 
 * VBW ( Virtual Block World ) is totally on chain, even the application itself.
 
-* VBW is a multi chain Dapp.
+* VBW is a multi chain Dapp. Roguelike world.
 
 ## Basic
 

@@ -146,7 +146,7 @@ const reqs={
 
 describe("VBW block functions test.",async () => {
   it("Mint block out.", async () => {
-    const x=2025,y=502,world=0;
+    const x=2025,y=503,world=0;
     await reqs.mint(x,y,world);
   });
 

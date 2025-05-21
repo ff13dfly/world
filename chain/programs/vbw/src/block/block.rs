@@ -29,6 +29,7 @@ pub fn mint(
     x:u32,                      
     y:u32,
     world:u32,
+    //_bump:u8,
 ) -> Result<()> {
 
     //1. input check

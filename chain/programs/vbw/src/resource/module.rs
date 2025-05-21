@@ -99,7 +99,7 @@ pub fn module_recover(
 /********************************************************************/
 
 #[derive(Accounts)]
-#[instruction(index:u32)]
+#[instruction(index:u32,ipfs:String)]
 pub struct AddModule<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -113,7 +113,8 @@ pub struct AddModule<'info> {
         payer = payer,
         seeds = [
             VBW_SEEDS_MODULE_DATA,
-            &index.to_le_bytes()
+            &index.to_le_bytes(),
+            //&ipfs.as_bytes(),
         ],
         bump,
     )]

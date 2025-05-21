@@ -97,7 +97,7 @@ const self={
     getPDA:(seeds:Buffer[],programId, isBump=false)=>{
       //const arr=[Buffer.from('lememe_mapping')];
       const [PDA_account,_bump] = PublicKey.findProgramAddressSync(seeds,programId);
-      //console.log(_bump);
+      console.log(seeds,_bump);
       if(!!isBump) return [_bump,PDA_account];
       return PDA_account;
     },
